@@ -1,5 +1,13 @@
-versions:
-  lrctl: latest
-  open_collector: 0.0.23
-  metrics: 0.0.1
-  eventhubbeat: 0.1
+services:
+  lrctl: 
+    image: gcr.io/datacollector-215718/lrctl
+    version: latest
+  open-collector:  
+    image: gcr.io/datacollector-215718/lrdc/server
+    version: 0.0.23
+  metrics:  
+    image: gcr.io/datacollector-215718/metrics
+    version: 0.0.1
+  eventhubbeat:  
+    image: gcr.io/datacollector-215718/beats/eventhubbeat
+    version: 0.1.0
