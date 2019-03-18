@@ -1,0 +1,5 @@
+versions:
+  lrctl: latest
+  open_collector: 0.0.23
+  metrics: 0.0.1
+  eventhubbeat: 0.1
