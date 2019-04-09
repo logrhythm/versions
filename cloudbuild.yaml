@@ -7,4 +7,4 @@ steps:
   # Run lrv validate against the present version.yml contents.
   - name: gcr.io/datacollector-215718/lrv:latest
     id: validate
-    args: ["validate"]
+    args: ["validate", "-f", "latest.yml"]
