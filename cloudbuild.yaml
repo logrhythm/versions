@@ -1,0 +1,10 @@
+# Google Cloud Build
+# This file defines the PR check for versions
+steps:
+
+  # === BUILD ===
+
+  # Run lrv validate against the present version.yml contents.
+  - name: gcr.io/datacollector-215718/lrv:latest
+    id: validate
+    args: ["validate", "-f", "latest.yml"]
