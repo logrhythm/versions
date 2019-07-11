@@ -1,10 +1,10 @@
 services:
   lrctl: 
     image: gcr.io/lrcollection/lrctl
-    version: 0.1.9
+    version: 0.1.10
   open-collector:  
     image: gcr.io/lrcollection/opencollector
-    version: 0.1.8
+    version: 0.1.10
   metrics:  
     image: gcr.io/lrcollection/metrics
     version: 0.1.0
