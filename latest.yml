@@ -10,7 +10,7 @@ services:
     version: 0.1.0
   eventhubbeat:  
     image: gcr.io/lrcollection/beats/eventhubbeat
-    version: 0.1.1
+    version: 0.1.2
   gsbeat:
     image: gcr.io/lrcollection/beats/gsbeat
-    version: 0.1.1
+    version: 0.1.2
