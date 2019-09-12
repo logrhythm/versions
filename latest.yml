@@ -16,4 +16,4 @@ services:
     version: 0.1.2
   s3beat:
     image: gcr.io/lrcollection/beats/s3beat
-    version 0.1.0
+    version: 0.1.0
