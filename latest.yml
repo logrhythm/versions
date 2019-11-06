@@ -20,4 +20,3 @@ services:
   pubsubbeat:
     image: gcr.io/lrcollection/beats/pubsubbeat
     version: 1.2.0
-# CHUCK TEST
