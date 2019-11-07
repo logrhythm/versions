@@ -7,7 +7,7 @@ services:
     version: 0.1.18
   metrics:  
     image: gcr.io/lrcollection/metrics
-    version: 0.1.0
+    version: 0.2.0
   eventhubbeat:  
     image: gcr.io/lrcollection/beats/eventhubbeat
     version: 0.1.5
