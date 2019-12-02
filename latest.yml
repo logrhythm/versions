@@ -1,7 +1,7 @@
 services:
   lrctl: 
     image: gcr.io/lrcollection/lrctl
-    version: 0.1.25
+    version: 0.1.26
   open-collector:  
     image: gcr.io/lrcollection/opencollector
     version: 0.1.19
@@ -20,3 +20,6 @@ services:
   pubsubbeat:
     image: gcr.io/lrcollection/beats/pubsubbeat
     version: 1.2.0
+  sophoscentralbeat:
+    image: gcr.io/lrcollection/beats/sophoscentralbeat 
+    version: 0.0.9
