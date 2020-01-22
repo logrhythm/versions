@@ -30,3 +30,4 @@ utilities:
   ocpipeline:
     image: gcr.io/lrcollection/ocpipeline
     version: 0.1.2
+    
