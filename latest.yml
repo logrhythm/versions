@@ -23,3 +23,11 @@ services:
   sophoscentralbeat:
     image: gcr.io/lrcollection/beats/sophoscentralbeat 
     version: 0.0.9
+utilities:
+  lrjq:
+    image: gcr.io/lrcollection/lrjq
+    version: 0.1.2
+  ocpipeline:
+    image: gcr.io/lrcollection/ocpipeline
+    version: 0.1.2
+    
