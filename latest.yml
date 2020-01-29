@@ -10,7 +10,7 @@ services:
     version: 0.3.0
   eventhubbeat:  
     image: gcr.io/lrcollection/beats/eventhubbeat
-    version: 0.1.5
+    version: 2.0.0
   gsbeat:
     image: gcr.io/lrcollection/beats/gsbeat
     version: 0.1.3
@@ -23,6 +23,9 @@ services:
   sophoscentralbeat:
     image: gcr.io/lrcollection/beats/sophoscentralbeat 
     version: 0.0.9
+  gmtbeat:
+    image: gcr.io/lrcollection/beats/gmtbeat
+    version: 0.1.1
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
