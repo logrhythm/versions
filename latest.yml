@@ -1,7 +1,7 @@
 services:
   lrctl: 
     image: gcr.io/lrcollection/lrctl
-    version: 0.1.29 
+    version: 0.1.29
   open-collector:  
     image: gcr.io/lrcollection/opencollector
     version: 0.1.21
