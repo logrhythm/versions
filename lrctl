@@ -1,0 +1,655 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd)"
+script_name=$(basename "${BASH_SOURCE[0]}")
+
+# === LRCTL VARIABLES ===
+
+lrctl_debug=0
+lrctl_version="1.0.0"
+lrctl_update_file="autoupdate.yml"
+lrctl_state_info="lrctl_state_info"
+lrctl_image=""
+lrctl_new_shell_after_group_membership=1
+lrctl_docker_membership_return_code=255
+
+lrctl_volume_mounts=()
+# Expose the hosts Docker socket to the container.
+lrctl_volume_mounts+=(/var/run/docker.sock:/var/run/docker.sock)
+# Mount the docker config directory which contains the auth info for gcr.io.
+lrctl_volume_mounts+=(${HOME}/.docker:/root/.docker)
+# Mount our working directory
+container_working_dir="/cwd"
+lrctl_volume_mounts+=($PWD:${container_working_dir})
+
+# Output file path, if provided
+output_file_path=""
+
+# Arguments needed to set file permissions and working dir
+set_permissions=0
+
+# Specify to use the local versions file
+local_versions_volume="lrctl_versions_info"
+local_versions_realpath=""
+local_versions_mount_path="/lrctl/versions/versions.yml"
+
+# URLs to check
+prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/latest.yml"
+container_registry_url="https://gcr.io"
+
+prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/lrctl"
+
+# Track the files that should be cleaned up. We add one file just to avoid the
+# array being empty.
+cleanup_files=(mktemp)
+
+# Proxy settings
+http_proxy=${http_proxy:-""}
+https_proxy=${https_proxy:-""}
+
+# === CLEANUP ===
+
+cleanupFile() {
+  cleanup_files+=("${1}")
+}
+
+cleanUp() {
+  rm -rf "${cleanup_files[@]}"
+}
+trap 'cleanUp' INT TERM HUP EXIT
+
+# === YAML FNS ===
+
+# Courtesy of https://stackoverflow.com/a/21189044
+# For example,
+#
+# services:
+#  lrctl:
+#    image: gcr.io/lrcollection/lrctl
+#    version: 0.1.0
+#  open-collector:
+#    image: gcr.io/lrcollection/opencollector
+#    version: 0.1.0
+#  metrics:
+#    image: gcr.io/lrcollection/metrics
+#    version: 0.1.0
+#  eventhubbeat:
+#    image: gcr.io/lrcollection/beats/eventhubbeat
+#    version: 0.1.0
+#
+# will become:
+#
+# services_lrctl_image="gcr.io/lrcollection/lrctl"
+# services_lrctl_version="0.1.0"
+# services_open-collector_image="gcr.io/lrcollection/opencollector"
+# services_open-collector_version="0.1.0"
+# services_metrics_image="gcr.io/lrcollection/metrics"
+# services_metrics_version="0.1.0"
+# services_eventhubbeat_image="gcr.io/lrcollection/beats/eventhubbeat"
+# services_eventhubbeat_version="0.1.0"
+parse_yaml() {
+  local s='[[:space:]]*' w='[a-zA-Z0-9_-]*' fs=$(echo @ | tr @ '\034')
+
+  echo "$@" | sed -ne "s|^\($s\):|\1|" \
+    -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
+    -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" |
+    awk -F$fs '{
+      indent = length($1)/2;
+      vname[indent] = $2;
+      for (i in vname) {if (i > indent) {delete vname[i]}}
+      if (length($3) > 0) {
+         vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+         printf("%s%s=\"%s\"\n", vn, $2, $3);
+      }
+   }'
+}
+
+# === DOCKER CONTAINER FNS ===
+removeContainerIfExists() {
+  local found=$(docker container ls -a | grep "\<$1\>")
+  if [[ ! -z "$found" ]]; then
+    # Force remove if container is a running instance
+    docker container rm -f "$1" 1> /dev/null
+  fi
+}
+
+# === DOCKER VOLUME FNS ===
+
+dockerVolumeExists() {
+  local volume_name="$1"
+  # Check if the volume exists without causing the script to exit on error due to errexit option
+  docker volume ls | grep "\<${volume_name}\>" &> /dev/null && found=$? || found=$?
+  local output="FALSE"
+  if [[ $found == 0 ]]; then
+    output="TRUE"
+  fi
+  echo "${output}"
+}
+
+createDockerVolume() {
+  # Save the volume name and preserve the rest of the parameters to pass to the volume create command
+  local volume_name="$1"
+  shift 1
+
+  if [[ $(dockerVolumeExists "${volume_name}") == "TRUE" ]]; then
+    removeDockerVolume "${volume_name}"
+  fi
+
+  # The "$@" does not expand the same way as when in echo. Hence, doing this ugly workaround.
+  docker volume create "$@" "${volume_name}" 1> /dev/null
+}
+
+removeDockerVolume() {
+  local volume_name="$1"
+  docker volume rm "${volume_name}" 1> /dev/null
+}
+
+isTarFile() {
+  local filename="${1}"
+  # If the file command is installed, use it. Otherwise, fallback to checking the extension.
+  if command > /dev/null -v file; then
+    file "${filename}" | grep "tar archive" &> /dev/null
+  else
+    if [[ "${filename}" =~ ^(.*[.]tar) ]]; then
+      return 0
+    elif [[ "${filename}" =~ ^(.*[.]tar[.].*) ]]; then
+      return 0
+    elif [[ "${filename}" =~ ^(.*[.]tgz) ]]; then
+      return 0
+    fi
+    return 1
+  fi
+
+}
+
+copyToVolume() {
+  local input="$1"
+  local volume_name="$2"
+  local container_name="cp_helper"
+  local mount_point="/cp_target"
+
+  removeContainerIfExists "${container_name}"
+  docker container create --name "${container_name}" -v "${volume_name}:${mount_point}" alpine \
+    1> /dev/null
+  if isTarFile "${input}"; then
+    cat "${input}" | docker cp - "${container_name}:${mount_point}"
+  else
+    docker cp "${input}" "${container_name}:${mount_point}"
+  fi
+  docker container rm "${container_name}" 1> /dev/null
+}
+
+# === DOCKER IMAGE FNS ===
+
+# Return the image IDs matching the image name.
+checkForImage() {
+  local image="$1"
+  docker image ls -q "${image}" 2> /dev/null
+}
+
+# Pull an image
+pullImage() {
+  local image="$1"
+  local name="${2:-}"
+  if [[ -z "${name}" ]]; then
+    name="${image}"
+  fi
+
+  # If we do have a copy of the image locally, don't pull the image
+  if [[ -n "$(checkForImage ${image})" ]]; then
+    return
+  fi
+
+  printf >&3 "Pulling down ${name} version ${image}..."
+  if [[ "${lrctl_debug}" -gt 0 ]]; then
+    printf >&3 "\n"
+    docker pull "${image}"
+  else
+    docker pull "${image}" 1> /dev/null
+  fi
+  printf >&3 "COMPLETE\n"
+}
+
+# === DOCKER INIT FNS ===
+
+# Make sure that the user is in the docker group. This allows the current user
+# to not have to run sudo to execute docker calls.
+ensureUserIsInDockerGroup() {
+  local docker_group="docker"
+
+  # The call to id is wrapped in a sub-call, because it can return a non-zero
+  # exit code if a group name cannot be found. Also, we are purposefully not specifying the
+  # username, in the call to id. Without it, the command will check the current
+  # process credentials without reading the groups that are directly assigned.
+  # It is possible that a user will be included in a group by other means than
+  # direct inclusion.
+  if echo "$(id ${USER} -nG 2> /dev/null)" | grep -qw "${docker_group}"; then
+    printf >&3 "${USER} belongs to ${docker_group}\n"
+  else
+    if [[ "$USER" == "root" ]]; then
+       echo "User is root. Skip adding user to ${docker_group} group."
+    else
+      # Add the user to the docker group.
+      printf >&3 "${USER} does not belong to ${docker_group}. Adding..."
+      sudo gpasswd -a "${USER}" "${docker_group}" 1> /dev/null
+      printf >&3 "DONE\n"
+
+      printf >&3 "Running init again to complete the setup.\n"
+      sudo -Eu $USER "${BASH_SOURCE[0]}" init
+
+      if [[ "${lrctl_new_shell_after_group_membership}" -gt 0 ]]; then
+        printf >&3 "Starting a new shell so that the docker membership will be enabled.\n"
+        exec sudo su - $USER
+      fi
+    fi
+    return ${lrctl_docker_membership_return_code}
+  fi
+}
+
+# check if docker is installed on machine
+installDockerCE() {
+  curl -fsSL https://get.docker.com/ | sh
+  sudo systemctl start docker
+  sudo systemctl enable docker
+  # Disable exit on error so that we can capture the return status from ensureUserIsInDockerGroup.
+  set +e
+  ensureUserIsInDockerGroup
+  set -e
+}
+
+# Check the docker version
+checkDockerVersion() {
+  local target_client_major=18
+  local target_client_minor=6
+  local target_daemon_major=18
+  local target_daemon_minor=6
+  local target_client_version="${target_client_major}.${target_client_minor}"
+  local target_daemon_version="${target_daemon_major}.${target_daemon_minor}"
+
+  local docker_version=$(docker version)
+  local client_version_major=$(echo "${docker_version}" | grep -m 1 "Version:" | tr -d " \t" | cut -f2 -d ":" | cut -c1-2)
+  local client_version_minor=$(echo "${docker_version}" | grep -m 1 "Version:" | tr -d " \t" | cut -f2 -d ":" | cut -c4-5)
+  local daemon_version_major=$(echo "${docker_version}" | grep "Version:" | sed -n 2p | tr -d " \t" | cut -f2 -d ":" | cut -c1-2)
+  local daemon_version_minor=$(echo "${docker_version}" | grep "Version:" | sed -n 2p | tr -d " \t" | cut -f2 -d ":" | cut -c4-5)
+
+  if [[ "${client_version_major}" < $target_client_major ]]; then
+    echo >&2 "Docker client version ${client_version_major} is less than required minimum version of ${target_client_version}"
+    exit 1
+  fi
+  if [[ ("${client_version_major}" == $target_client_major) && ("${client_version_minor#0}" < $target_client_minor) ]]; then
+    echo >&2 "Docker client version ${client_version_major}.${client_version_minor} is less than required minimum version of ${target_client_version}"
+    exit 1
+  fi
+
+  if [[ "${daemon_version_major}" < $target_daemon_major ]]; then
+    echo >&2 "Docker daemon version ${daemon_version_major} is less than required minimum version of ${target_daemon_version}"
+    exit 1
+  fi
+  if [[ ("${daemon_version_major}" == $target_daemon_major) && ("${daemon_version_minor#0}" < $target_daemon_minor) ]]; then
+    echo >&2 "Docker daemon version ${daemon_version_major}.${daemon_version_minor} is less than required minimum version of ${target_daemon_version}"
+    exit 1
+  fi
+}
+
+# === CONNECTION FNS ===
+
+# Retrieve the specified URL.
+getUrl() {
+  local url="${1}"
+  curl -sSL --fail "${url}"
+}
+
+# Check that the specified URL can be reached.
+checkUrl() {
+  local url="${1}"
+  local err_file=$(mktemp)
+  cleanupFile "${err_file}"
+
+  printf >&3 "Checking connection to %s..." "${url}"
+  if getUrl "${url}" 1> /dev/null 2> "${err_file}"; then
+    printf >&3 "SUCCESS\n"
+  else
+    printf >&3 "FAIL\n"
+    printf >&3 "%s\n\n" "$(< "${err_file}")"
+    return 1
+  fi
+}
+
+# === COMMAND AVAILABILITY ===
+
+# Check that the specified command is available.
+checkCommand() {
+  local cmd="${1}"
+  printf >&3 "Checking availability of %s..." "${cmd}"
+  if command -v "${cmd}" &> /dev/null; then
+    printf >&3 "SUCCESS\n"
+  else
+    printf >&3 "FAIL\n"
+    return 1
+  fi
+} 
+
+# === LRCTL FNS ===
+
+# Execute checks to see if the pre-requisites are installed and certain
+# connections can be made.
+check() {
+  local fail_count=0
+
+  if ! checkUrl "${container_registry_url}"; then
+    fail_count=$(($fail_count + 1))
+  fi
+
+  # If not using a local versions file, then check connectivity to the the prod
+  # versions file.
+  if [[ -z "${local_versions_realpath}" ]]; then
+    if ! checkUrl "${prod_versions_file_url}"; then
+      fail_count=$(($fail_count + 1))
+    fi
+  fi
+
+  if ! checkCommand docker; then    
+    echo "Docker is not currently installed. This is a requirement for Open Collector. Would you like to install Community Edition of Docker (Docker CE)? (y/n)"
+    read doInstallDocker    
+    if [[ ( "$doInstallDocker" == "y" ) || ( "$doInstallDocker" == "Y" ) ]]; then
+      installDockerCE
+    else
+      printf >&3 "Please install the docker client tools before proceeding.\n"
+      fail_count=$(($fail_count + 1))  
+    fi        
+  fi
+
+  if [[ "${fail_count}" -gt 0 ]]; then
+    printf >&3 "%s of the checks failed.\n" "${fail_count}"
+    return 1
+  else
+    printf >&3 "All of the checks succeeded.\n"
+  fi
+} 
+
+ensureDockerIsAccessable() {
+  # Disable exit on error so that we can capture the return status from docker version.
+  set +e
+    docker version &> /dev/null
+    daemon_status=$?
+    if [[ "${daemon_status}" -gt "0" ]]; then
+      echo "Docker daemon cannot be reached. New shell signin required."
+      exit 1
+    fi
+  set -e
+}
+
+
+getScriptVersion() {
+  printf >&3 "\nLrctl Script Version: ${lrctl_version}\n\n"
+}
+
+replaceSelf() {
+  echo "Updating Lrctl script to lastest version..."
+  local new_script="$1"
+
+  chmod +x "${new_script}"
+  mv "${new_script}" "${BASH_SOURCE[0]}"
+  echo "Update complete."
+}
+
+# Replaces the current script with latest.
+updateScript() {
+  if [[ $(dockerVolumeExists "${lrctl_state_info}") == "FALSE" ]]; then
+    echo "${lrctl_state_info} does not exist. Please run $./lrctl init"
+    exit 1
+  fi
+
+  # Failure to validate/update should not prevent users from being able to execute lrctl
+  set +e
+
+  # Is autoupdate enabled or disabled
+  local container_name="cp_helper"
+  local mount_point="/cp_target"
+  local file_content=$(docker run --name ${container_name} --rm -v ${lrctl_state_info}:/${mount_point} alpine cat ${mount_point}/${lrctl_update_file})
+  local update_enabled=$(echo "$file_content" | awk '{print $2}')
+  if [[ "${update_enabled}" == "false" ]]; then
+    return 0
+  fi
+
+  local temp_file="${BASH_SOURCE[0]}_temp"
+  curl --silent --fail "${prod_script_file_url}" > "${temp_file}"
+  if [[ $? -ne "0" ]]; then
+    echo "Failed to fetch ${prod_script_file_url}."
+    return 1
+  fi
+
+  # Compare checksums for equivalence
+  local remote_check_sum=$(cat ${temp_file} | sha256sum | awk '{print $1}')
+  local local_check_sum=$(cat ${BASH_SOURCE[0]} | sha256sum | awk '{print $1}')
+  if [[ "$remote_check_sum" == "$local_check_sum" ]]; then
+    return 0
+  fi
+
+  # Replace current script with latest
+  replaceSelf "${temp_file}"
+  set -e
+
+  return 0
+}
+
+# Initialize the host so that lrctl can run properly.
+init() {
+  # Disable exit on error so that we can capture the return status from ensureUserIsInDockerGroup.
+  set +e
+  ensureUserIsInDockerGroup
+  ensureDockerIsAccessable
+  local docker_membership_status=$?
+  set -e
+  case ${docker_membership_status} in
+    0)
+      # No errors and the user was already in the docker group; proceed with init
+      ;;
+    ${lrctl_docker_membership_return_code})
+      # User was added to the docker group; do not proceed with init until a new session is started
+      return 0
+      ;;
+    *)
+      # Something bad has happened; return the status code
+      return "${docker_membership_status}"
+      ;;
+  esac
+
+  # NOTE: The Docker version check must come after the user has been allowed to talk to Docker.
+  checkDockerVersion
+
+  echo -n "Enabling docker daemon..."
+  set +e
+  sudo systemctl enable docker
+  if [[ ${PIPESTATUS[0]} == 1 ]]; then echo "FAILED, run 'systemctl enable docker' as root so docker runs automatically on system start up!!!"; else echo "SUCCESS"; fi
+  set -e
+
+  local msg=""
+  msg+="Initialization is complete. You may proceed to use ${script_name}. "
+  msg+="For help, run\n  ./${script_name} help\n"
+  printf >&3 "${msg}"
+}
+
+# Pull the lrctl image if it is not already downloaded. This pulls the image
+# quietly unlike if it is pulled during the initial run.
+pullLrctlImage() {
+  pullImage "${lrctl_image}" "lrctl"
+}
+
+# Run the LRCTL container
+runLrctl() {
+  docker_args=(-i --rm --name lrctl)
+
+  for vol_mount in "${lrctl_volume_mounts[@]}"; do
+    docker_args+=(-v "${vol_mount}")
+  done
+
+  if [[ -n "${local_versions_realpath}" ]]; then
+    local mount_dir=$(dirname "${local_versions_mount_path}")
+    docker_args+=(-v "${local_versions_volume}:${mount_dir}")
+  fi
+
+  # If we're using an output file, don't attach to TTY.
+  if [[ "${output_file_path}" != "" ]]; then
+    echo "Sending command results to ${output_file_path}"
+    # Add the image and the args that were passed to this function
+    docker_args+=("${lrctl_image}" "$@")
+    docker run "${docker_args[@]}" > ${output_file_path}
+    return
+  # if stdin (0) is attached to a terminal, then attach to the container as TTY.
+  elif [[ -t 0 ]]; then
+    docker_args+=(-t)
+  fi
+
+  # Add the image and the args that were passed to this function
+  docker_args+=("${lrctl_image}" "$@")
+
+  if [[ "$http_proxy" != "" ]]; then
+    echo "Using proxy setting: http_proxy=${http_proxy}"
+    docker_args+=("--env" "http_proxy=${http_proxy}")
+  fi
+  if [[ "$https_proxy" != "" ]]; then
+    echo "Using proxy setting: https_proxy=${https_proxy}"
+    docker_args+=("--env" "https_proxy=${https_proxy}")
+  fi
+
+  if [[ "$set_permissions" -eq 1 ]]; then
+    # Add the proper uid/gid flags
+    docker_args+=("--uid" "$(id -u $(whoami))")
+    docker_args+=("--gid" "$(id -g $(whoami))")
+    
+    # Add working dir flags so any created files persist to user directory
+    docker_args+=("--working-dir" "${container_working_dir}")
+  fi
+
+  if [[ "${lrctl_debug}" -gt 0 ]]; then
+    echo >&2 "Docker Run Args: ${docker_args[@]}"
+  fi
+
+  docker run "${docker_args[@]}"
+}
+
+processVersionsInfo() {
+  # Default to the latest local image of lrctl we have
+  services_lrctl_image="gcr.io/lrcollection/lrctl"
+  services_lrctl_version="$(docker image ls gcr.io/lrcollection/lrctl | awk 'NR==2{print $2}')"
+  if [[ -n "${local_versions_realpath}" ]]; then
+    # Copy the versions info into a volume
+    createDockerVolume "${local_versions_volume}"
+    copyToVolume "${local_versions_realpath}" "${local_versions_volume}"
+
+    eval "$(parse_yaml "$(cat "${local_versions_realpath}")")" 2> /dev/null || true
+  else
+    eval "$(parse_yaml "$(curl --fail --silent "${prod_versions_file_url}")")" 2> /dev/null || true
+  fi
+  lrctl_image=$(echo "${services_lrctl_image}:${services_lrctl_version}" || true)
+
+  if [[ -z "$services_lrctl_version" ]]; then
+    echo >&2 "Unable to fetch latest version information from github. If this is your initial install, check your firewall settings."
+    exit 1
+  fi
+
+}
+
+# === MAIN PROCESSING ===
+
+# Create a new file handler (3) which will be used for the this script's
+# output.  We ared doing this redirection so that we can control this script's
+# output separately from commands that this script will run
+exec 3>&1
+
+# Check for arguments that are meant for this script.
+first_non_flag_arg=""
+args=()
+
+if [[ $# -eq 0 ]] ; then
+    # Run the lrctl in the container
+    args+=("--help")
+fi
+
+if [[ "$*" == *install* ]]; then
+  # Set permissions for utilities install
+  set_permissions=1
+fi
+
+while (("$#")); do
+  case "${1}" in
+    "--lrctl-debug")
+      lrctl_debug=$(($lrctl_debug + 1))
+      shift 1
+      ;;
+    "--no-new-shell")
+      lrctl_new_shell_after_group_membership=0
+      shift 1
+      ;;
+    "--dev")
+      # Pass along the flag to the container.
+      args+=($1)
+      lrctl_image="bazel/cmd/lrctl:stamped_image"
+      shift 1
+      ;;
+    "-V")
+      ;&
+    "--versions-file")
+      if [[ -z "$2" ]]; then
+        echo "Version file url or absolute directory must be specified with the --versions-file flag."
+        exit 1
+      elif [[ "$2" =~ ^(http[s]?://) ]]; then
+        # If we specify a url for the versions-file, pass the flag to args
+        args+=("${1}" "${2}")
+      else
+        # Else the versions file is local
+        local_versions_realpath=$(realpath "${2}")
+        args+=("${1}" "${local_versions_mount_path}")
+      fi
+
+      shift 2
+      ;;
+    "--outfile")
+      output_file_path="$2"
+      shift 2
+      ;;
+    *)
+      if [[ -z "${first_non_flag_arg}" ]]; then
+        first_non_flag_arg="${1}"
+      fi
+      args+=($1)
+      shift 1
+      ;;
+  esac
+
+done
+
+# Check for commands meant for this shell script.
+case "${first_non_flag_arg:-}" in
+  check)
+    check
+    ;;
+  init)
+    check
+    init
+    ;;
+  script-version)
+    getScriptVersion
+    ;;
+  *)
+    updateScript
+    if [[ $? -gt "0" ]]; then
+      echo "Failed to update Lrctl script. Falling back on current script."
+    fi
+    # Check if args has the dev flag. Skip condition if it does.
+    if [[ "${args[@]}" != *"--dev"* ]]; then
+      # Read which images will be used.
+      processVersionsInfo
+
+      # Pull the image down silently if we don't already have it. We do this so
+      # that the user does not see the Docker pull information that would happen
+      # if the pull happens during the run.
+      pullLrctlImage
+    fi
+    # Run the lrctl in the container
+    runLrctl "${args[@]}"
+    ;;
+esac
