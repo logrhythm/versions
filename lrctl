@@ -636,9 +636,7 @@ case "${first_non_flag_arg:-}" in
     ;;
   *)
     updateScript
-    if [[ $? -gt "0" ]]; then
-      echo "Failed to update Lrctl script. Falling back on current script."
-    fi
+    
     # Check if args has the dev flag. Skip condition if it does.
     if [[ "${args[@]}" != *"--dev"* ]]; then
       # Read which images will be used.
@@ -653,3 +651,4 @@ case "${first_non_flag_arg:-}" in
     runLrctl "${args[@]}"
     ;;
 esac
+
