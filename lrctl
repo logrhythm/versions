@@ -9,8 +9,6 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 
 lrctl_debug=0
 lrctl_version="1.0.0"
-lrctl_update_file="autoupdate.yml"
-lrctl_state_info="lrctl_state_info"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
@@ -23,6 +21,10 @@ lrctl_volume_mounts+=(${HOME}/.docker:/root/.docker)
 # Mount our working directory
 container_working_dir="/cwd"
 lrctl_volume_mounts+=($PWD:${container_working_dir})
+# LRCTL config volume
+lrctl_config_volume="lrctl_state_info"
+# LRCTL config .yml
+lrctl_config_yml="auto_update.yml"
 
 # Output file path, if provided
 output_file_path=""
@@ -397,8 +399,8 @@ replaceSelf() {
 
 # Replaces the current script with latest.
 updateScript() {
-  if [[ $(dockerVolumeExists "${lrctl_state_info}") == "FALSE" ]]; then
-    echo "${lrctl_state_info} does not exist. Please run $./lrctl init"
+  if [[ $(dockerVolumeExists "${lrctl_config_volume}") == "FALSE" ]]; then
+    echo "${lrctl_config_volume} does not exist. Please run $./lrctl init"
     exit 1
   fi
 
@@ -408,7 +410,7 @@ updateScript() {
   # Is autoupdate enabled or disabled
   local container_name="cp_helper"
   local mount_point="/cp_target"
-  local file_content=$(docker run --name ${container_name} --rm -v ${lrctl_state_info}:/${mount_point} alpine cat ${mount_point}/${lrctl_update_file})
+  local file_content=$(docker run --name ${container_name} --rm -v ${lrctl_config_volume}:/${mount_point} alpine cat ${mount_point}/${lrctl_config_yml})
   local update_enabled=$(echo "$file_content" | awk '{print $2}')
   if [[ "${update_enabled}" == "false" ]]; then
     return 0
@@ -418,6 +420,7 @@ updateScript() {
   curl --silent --fail "${prod_script_file_url}" > "${temp_file}"
   if [[ $? -ne "0" ]]; then
     echo "Failed to fetch ${prod_script_file_url}."
+    rm -f "${temp_file}"
     return 1
   fi
 
@@ -466,10 +469,22 @@ init() {
   if [[ ${PIPESTATUS[0]} == 1 ]]; then echo "FAILED, run 'systemctl enable docker' as root so docker runs automatically on system start up!!!"; else echo "SUCCESS"; fi
   set -e
 
+  # Create LRCTL config volume and .yml file
+  createLRCTLConfigVolume
+
   local msg=""
   msg+="Initialization is complete. You may proceed to use ${script_name}. "
   msg+="For help, run\n  ./${script_name} help\n"
   printf >&3 "${msg}"
+}
+
+# Create LRCTL_state_info volume and auto_update.yml to hold LRCTL config data
+createLRCTLConfigVolume() {
+  echo 'Creating lrctl_state_info volume'
+  createDockerVolume "${lrctl_config_volume}"
+  echo "auto_update: true" > "${lrctl_config_yml}"
+  copyToVolume "${lrctl_config_yml}" "${lrctl_config_volume}"
+  rm "${lrctl_config_yml}"
 }
 
 # Pull the lrctl image if it is not already downloaded. This pulls the image
@@ -651,4 +666,3 @@ case "${first_non_flag_arg:-}" in
     runLrctl "${args[@]}"
     ;;
 esac
-
