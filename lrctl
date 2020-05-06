@@ -25,6 +25,8 @@ lrctl_volume_mounts+=($PWD:${container_working_dir})
 lrctl_config_volume="lrctl_state_info"
 # LRCTL config .yml
 lrctl_config_yml="auto_update.yml"
+# Starting value for global auto_update
+global_autoupdate_enabled="true"
 
 # Output file path, if provided
 output_file_path=""
@@ -400,8 +402,7 @@ replaceSelf() {
 # Replaces the current script with latest.
 updateScript() {
   if [[ $(dockerVolumeExists "${lrctl_config_volume}") == "FALSE" ]]; then
-    echo "${lrctl_config_volume} does not exist. Please run $./lrctl init"
-    exit 1
+    createLRCTLConfigVolume
   fi
 
   # Failure to validate/update should not prevent users from being able to execute lrctl
@@ -411,8 +412,8 @@ updateScript() {
   local container_name="cp_helper"
   local mount_point="/cp_target"
   local file_content=$(docker run --name ${container_name} --rm -v ${lrctl_config_volume}:/${mount_point} alpine cat ${mount_point}/${lrctl_config_yml})
-  local update_enabled=$(echo "$file_content" | awk '{print $2}')
-  if [[ "${update_enabled}" == "false" ]]; then
+  global_autoupdate_enabled=$(echo "$file_content" | awk '{print $2}' | xargs)
+  if [[ "${global_autoupdate_enabled}" == "false" ]]; then
     return 0
   fi
 
@@ -428,6 +429,7 @@ updateScript() {
   local remote_check_sum=$(cat ${temp_file} | sha256sum | awk '{print $1}')
   local local_check_sum=$(cat ${BASH_SOURCE[0]} | sha256sum | awk '{print $1}')
   if [[ "$remote_check_sum" == "$local_check_sum" ]]; then
+    rm -f "${temp_file}"
     return 0
   fi
 
@@ -557,7 +559,9 @@ processVersionsInfo() {
 
     eval "$(parse_yaml "$(cat "${local_versions_realpath}")")" 2> /dev/null || true
   else
-    eval "$(parse_yaml "$(curl --fail --silent "${prod_versions_file_url}")")" 2> /dev/null || true
+    if [[ "${global_autoupdate_enabled}" == "true" ]]; then
+      eval "$(parse_yaml "$(curl --fail --silent "${prod_versions_file_url}")")" 2> /dev/null || true
+    fi
   fi
   lrctl_image=$(echo "${services_lrctl_image}:${services_lrctl_version}" || true)
 
@@ -650,8 +654,10 @@ case "${first_non_flag_arg:-}" in
     getScriptVersion
     ;;
   *)
-    updateScript
-    
+    # Check if args has autoupdate. Skip condition if it does.
+    if [[ "${args[@]}" != *"autoupdate"* ]]; then
+      updateScript
+    fi
     # Check if args has the dev flag. Skip condition if it does.
     if [[ "${args[@]}" != *"--dev"* ]]; then
       # Read which images will be used.
@@ -660,7 +666,9 @@ case "${first_non_flag_arg:-}" in
       # Pull the image down silently if we don't already have it. We do this so
       # that the user does not see the Docker pull information that would happen
       # if the pull happens during the run.
-      pullLrctlImage
+      if [[ "${global_autoupdate_enabled}" == "true" ]]; then
+        pullLrctlImage
+      fi
     fi
     # Run the lrctl in the container
     runLrctl "${args[@]}"
