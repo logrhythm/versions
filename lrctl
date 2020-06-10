@@ -8,7 +8,7 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="1.0.0"
+lrctl_version="5.0.0"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
@@ -497,7 +497,7 @@ pullLrctlImage() {
 
 # Run the LRCTL container
 runLrctl() {
-  docker_args=(-i --rm --name lrctl)
+  docker_args=(-i --rm --name lrctl --env script_version=${lrctl_version})
 
   for vol_mount in "${lrctl_volume_mounts[@]}"; do
     docker_args+=(-v "${vol_mount}")
@@ -522,7 +522,6 @@ runLrctl() {
 
   # Add the image and the args that were passed to this function
   docker_args+=("${lrctl_image}" "$@")
-
   if [[ "$http_proxy" != "" ]]; then
     echo "Using proxy setting: http_proxy=${http_proxy}"
     docker_args+=("--env" "http_proxy=${http_proxy}")
@@ -654,8 +653,8 @@ case "${first_non_flag_arg:-}" in
     getScriptVersion
     ;;
   *)
-    # Check if args has autoupdate. Skip condition if it does.
-    if [[ "${args[@]}" != *"autoupdate"* ]]; then
+    # Check if args has autoupdate and no dev flag. Skip condition if it does.
+    if [[ "${args[@]}" != *"autoupdate"* && "${args[@]}" != *"--dev"* ]]; then
       updateScript
     fi
     # Check if args has the dev flag. Skip condition if it does.
