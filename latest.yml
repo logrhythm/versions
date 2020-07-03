@@ -1,10 +1,10 @@
 services:
   lrctl:
     image: gcr.io/lrcollection/lrctl
-    version: 5.0.2
+    version: 5.0.3
   open-collector:
     image: gcr.io/lrcollection/opencollector
-    version: 5.0.0
+    version: 5.0.1
   metrics:
     image: gcr.io/lrcollection/metrics
     version: 5.0.0
@@ -25,7 +25,7 @@ services:
     version: 5.0.0
   gmtbeat:
     image: gcr.io/lrcollection/beats/gmtbeat
-    version: 0.1.4
+    version: 5.0.0
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
