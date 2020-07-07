@@ -29,7 +29,7 @@ services:
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
-    version: 5.0.1
+    version: 5.0.0
   ocpipeline:
     image: gcr.io/lrcollection/ocpipeline
-    version: 5.0.1
+    version: 5.0.0
