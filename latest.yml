@@ -1,7 +1,7 @@
 services:
   lrctl:
     image: gcr.io/lrcollection/lrctl
-    version: 5.0.3
+    version: 5.0.4
   open-collector:
     image: gcr.io/lrcollection/opencollector
     version: 5.0.1
@@ -10,22 +10,22 @@ services:
     version: 5.0.0
   eventhubbeat:
     image: gcr.io/lrcollection/beats/eventhubbeat
-    version: 5.0.1
+    version: 5.0.2
   gsbeat:
     image: gcr.io/lrcollection/beats/gsbeat
-    version: 5.0.0
+    version: 5.0.1
   s3beat:
     image: gcr.io/lrcollection/beats/s3beat
-    version: 5.0.1
+    version: 5.0.2
   pubsubbeat:
     image: gcr.io/lrcollection/beats/pubsubbeat
-    version: 5.0.0
+    version: 5.0.1
   sophoscentralbeat:
     image: gcr.io/lrcollection/beats/sophoscentralbeat
-    version: 5.0.0
+    version: 5.0.1
   gmtbeat:
     image: gcr.io/lrcollection/beats/gmtbeat
-    version: 5.0.0
+    version: 5.0.1
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
