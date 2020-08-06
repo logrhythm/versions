@@ -26,6 +26,9 @@ services:
   gmtbeat:
     image: gcr.io/lrcollection/beats/gmtbeat
     version: 5.0.1
+  ciscoampbeat:
+    image: gcr.io/lrcollection/beats/ciscoampbeat
+    version: 5.0.0
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
