@@ -8,7 +8,7 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="5.0.0"
+lrctl_version="6.0.0"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
@@ -489,6 +489,17 @@ createLRCTLConfigVolume() {
   rm "${lrctl_config_yml}"
 }
 
+setupLocalMount() {
+  if [[ "$set_permissions" -eq 1 ]]; then
+    # Add the proper uid/gid flags
+    docker_args+=("--uid" "$(id -u $(whoami))")
+    docker_args+=("--gid" "$(id -g $(whoami))")
+    
+    # Add working dir flags so any created files persist to user directory
+    docker_args+=("--working-dir" "${container_working_dir}")
+  fi
+}
+
 # Pull the lrctl image if it is not already downloaded. This pulls the image
 # quietly unlike if it is pulled during the initial run.
 pullLrctlImage() {
@@ -508,15 +519,7 @@ runLrctl() {
     docker_args+=(-v "${local_versions_volume}:${mount_dir}")
   fi
 
-  # If we're using an output file, don't attach to TTY.
-  if [[ "${output_file_path}" != "" ]]; then
-    echo "Sending command results to ${output_file_path}"
-    # Add the image and the args that were passed to this function
-    docker_args+=("${lrctl_image}" "$@")
-    docker run "${docker_args[@]}" > ${output_file_path}
-    return
-  # if stdin (0) is attached to a terminal, then attach to the container as TTY.
-  elif [[ -t 0 ]]; then
+  if [[ -t 0 ]]; then
     docker_args+=(-t)
   fi
 
@@ -531,14 +534,7 @@ runLrctl() {
     docker_args+=("--env" "https_proxy=${https_proxy}")
   fi
 
-  if [[ "$set_permissions" -eq 1 ]]; then
-    # Add the proper uid/gid flags
-    docker_args+=("--uid" "$(id -u $(whoami))")
-    docker_args+=("--gid" "$(id -g $(whoami))")
-    
-    # Add working dir flags so any created files persist to user directory
-    docker_args+=("--working-dir" "${container_working_dir}")
-  fi
+  setupLocalMount
 
   if [[ "${lrctl_debug}" -gt 0 ]]; then
     echo >&2 "Docker Run Args: ${docker_args[@]}"
@@ -587,8 +583,8 @@ if [[ $# -eq 0 ]] ; then
     args+=("--help")
 fi
 
-if [[ "$*" == *install* ]]; then
-  # Set permissions for utilities install
+if [[ "$*" == *install* || "$*" == *outfile* ]]; then
+  # Set permissions for writing to user working dir
   set_permissions=1
 fi
 
@@ -623,10 +619,6 @@ while (("$#")); do
         args+=("${1}" "${local_versions_mount_path}")
       fi
 
-      shift 2
-      ;;
-    "--outfile")
-      output_file_path="$2"
       shift 2
       ;;
     *)
