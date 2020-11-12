@@ -8,7 +8,7 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="6.0.0"
+lrctl_version="6.0.1"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
@@ -263,6 +263,17 @@ installDockerCE() {
   set -e
 }
 
+get_distribution() {
+  lsb_dist=""
+	# Every system that we officially support has /etc/os-release
+	if [ -r /etc/os-release ]; then
+		lsb_dist="$(. /etc/os-release && echo "$ID")"
+	fi
+	# Returning an empty string here should be alright since the
+	# case statements don't act unless you provide an actual value
+ echo "${lsb_dist}"
+}
+
 # Check the docker version
 checkDockerVersion() {
   local target_client_major=18
@@ -355,14 +366,19 @@ check() {
   fi
 
   if ! checkCommand docker; then    
-    echo "Docker is not currently installed. This is a requirement for Open Collector. Would you like to install Community Edition of Docker (Docker CE)? (y/n)"
-    read doInstallDocker    
-    if [[ ( "$doInstallDocker" == "y" ) || ( "$doInstallDocker" == "Y" ) ]]; then
-      installDockerCE
-    else
+   if [[ $(get_distribution) != "rhel" ]]; then
+      echo "Docker is not currently installed. This is a requirement for Open Collector. Would you like to install Community Edition of Docker (Docker CE)? (y/n)"
+      read doInstallDocker    
+      if [[ ( "$doInstallDocker" == "y" ) || ( "$doInstallDocker" == "Y" ) ]]; then
+        installDockerCE
+      else
+        printf >&3 "Please install the docker client tools before proceeding.\n"
+        fail_count=$(($fail_count + 1))  
+      fi 
+    else 
       printf >&3 "Please install the docker client tools before proceeding.\n"
       fail_count=$(($fail_count + 1))  
-    fi        
+    fi
   fi
 
   if [[ "${fail_count}" -gt 0 ]]; then
@@ -442,7 +458,7 @@ updateScript() {
 
 # Initialize the host so that lrctl can run properly.
 init() {
-  # Disable exit on error so that we can capture the return status from ensureUserIsInDockerGroup.
+ # Disable exit on error so that we can capture the return status from ensureUserIsInDockerGroup.
   set +e
   ensureUserIsInDockerGroup
   ensureDockerIsAccessable
