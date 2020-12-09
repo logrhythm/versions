@@ -1,10 +1,10 @@
 services:
   lrctl:
     image: gcr.io/lrcollection/lrctl
-    version: 6.1.2
+    version: 6.1.3
   open-collector:
     image: gcr.io/lrcollection/opencollector
-    version: 5.3.0
+    version: 5.3.2
   metrics:
     image: gcr.io/lrcollection/metrics
     version: 5.0.0
@@ -41,4 +41,4 @@ utilities:
     version: 5.1.0
   ocpipeline:
     image: gcr.io/lrcollection/ocpipeline
-    version: 5.1.0
+    version: 5.1.1
