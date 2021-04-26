@@ -692,3 +692,4 @@ case "${first_non_flag_arg:-}" in
     runLrctl "${args[@]}"
     ;;
 esac
+
