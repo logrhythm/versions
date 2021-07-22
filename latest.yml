@@ -1,22 +1,22 @@
 services:
   lrctl:
     image: gcr.io/lrcollection/lrctl
-    version: 6.2.8
+    version: 6.2.9
   open-collector:
     image: gcr.io/lrcollection/opencollector
-    version: 5.3.9
+    version: 5.3.10
   metrics:
     image: gcr.io/lrcollection/metrics
     version: 6.0.0
   eventhubbeat:
     image: gcr.io/lrcollection/beats/eventhubbeat
-    version: 6.0.2
+    version: 6.0.3
   gsbeat:
     image: gcr.io/lrcollection/beats/gsbeat
     version: 6.0.2
   s3beat:
     image: gcr.io/lrcollection/beats/s3beat
-    version: 6.1.4
+    version: 6.1.5
   pubsubbeat:
     image: gcr.io/lrcollection/beats/pubsubbeat
     version: 6.0.1
@@ -37,14 +37,16 @@ services:
     version: 6.0.3
   carbonblackcloudbeat:
     image: gcr.io/lrcollection/beats/carbonblackcloudbeat
-    version: 6.0.2
+    version: 6.0.3
   oktabeat:
     image: gcr.io/lrcollection/beats/oktabeat
     version: 6.0.1
   kafkabeat:
     image: gcr.io/lrcollection/beats/kafkabeat
     version: 6.0.4
-
+  qualysfimbeat:
+    image: gcr.io/lrcollection/beats/qualysfimbeat
+    version: 6.0.1
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
