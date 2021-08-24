@@ -4,7 +4,7 @@ services:
     version: 6.3.0
   open-collector:
     image: gcr.io/lrcollection/opencollector
-    version: 5.3.11
+    version: 5.4.10
   metrics:
     image: gcr.io/lrcollection/metrics
     version: 6.0.0
@@ -49,7 +49,7 @@ services:
     version: 6.0.1
   proofpointbeat:
     image: gcr.io/lrcollection/beats/proofpointbeat
-    version: 6.0.0
+    version: 6.0.1
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
