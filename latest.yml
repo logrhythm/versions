@@ -52,7 +52,7 @@ services:
     version: 6.0.2
   genericbeat:
     image: gcr.io/lrcollection/beats/genericbeat
-    version: 6.0.2
+    version: 6.0.0
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
