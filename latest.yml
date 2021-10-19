@@ -56,7 +56,7 @@ services:
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
-    version: 5.1.2
+    version: 5.1.3
   ocpipeline:
     image: gcr.io/lrcollection/ocpipeline
     version: 5.1.5
