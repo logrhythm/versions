@@ -16,7 +16,7 @@ services:
     version: 6.0.3
   s3beat:
     image: gcr.io/lrcollection/beats/s3beat
-    version: 6.1.10
+    version: 6.1.9
   pubsubbeat:
     image: gcr.io/lrcollection/beats/pubsubbeat
     version: 6.0.1
