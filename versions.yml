@@ -1,0 +1,62 @@
+services:
+  lrctl:
+    image: gcr.io/lrcollection/lrctl
+    version: 6.4.0
+  open-collector:
+    image: gcr.io/datacollector-215718/opencollector
+    version: 5.5.4-oc_go_profiler-dirty
+  metrics:
+    image: gcr.io/lrcollection/metrics
+    version: 6.0.1
+  eventhubbeat:
+    image: gcr.io/lrcollection/beats/eventhubbeat
+    version: 6.0.4
+  gsbeat:
+    image: gcr.io/lrcollection/beats/gsbeat
+    version: 6.0.3
+  s3beat:
+    image: gcr.io/datacollector-215718/beats/s3beat
+    version: 6.1.10-oc_go_profiler-dirty
+  pubsubbeat:
+    image: gcr.io/lrcollection/beats/pubsubbeat
+    version: 6.0.1
+  sophoscentralbeat:
+    image: gcr.io/lrcollection/beats/sophoscentralbeat
+    version: 6.0.1
+  gmtbeat:
+    image: gcr.io/lrcollection/beats/gmtbeat
+    version: 6.0.2
+  ciscoampbeat:
+    image: gcr.io/lrcollection/beats/ciscoampbeat
+    version: 6.1.4
+  webhookbeat:
+    image: gcr.io/lrcollection/beats/webhookbeat
+    version: 6.1.4
+  duobeat:
+    image: gcr.io/lrcollection/beats/duobeat
+    version: 6.0.4
+  carbonblackcloudbeat:
+    image: gcr.io/lrcollection/beats/carbonblackcloudbeat
+    version: 6.0.4
+  oktabeat:
+    image: gcr.io/lrcollection/beats/oktabeat
+    version: 6.0.2
+  kafkabeat:
+    image: gcr.io/lrcollection/beats/kafkabeat
+    version: 6.0.5
+  qualysfimbeat:
+    image: gcr.io/lrcollection/beats/qualysfimbeat
+    version: 6.0.2
+  proofpointbeat:
+    image: gcr.io/lrcollection/beats/proofpointbeat
+    version: 6.0.2
+  genericbeat:
+    image: gcr.io/lrcollection/beats/genericbeat
+    version: 6.0.0
+utilities:
+  lrjq:
+    image: gcr.io/lrcollection/lrjq
+    version: 5.1.3
+  ocpipeline:
+    image: gcr.io/lrcollection/ocpipeline
+    version: 5.1.6
