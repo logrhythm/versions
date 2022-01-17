@@ -1,6 +1,6 @@
 services:
   lrctl:
-    image: gcr.io/datacollector-215719/lrctl
+    image: gcr.io/datacollector-215718/lrctl
     version: 6.4.0-certificate_coding_update_test-dirty
   open-collector:
     image: gcr.io/lrcollection/opencollector
