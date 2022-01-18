@@ -1,10 +1,10 @@
 services:
   lrctl:
     image: gcr.io/lrcollection/lrctl
-    version: 6.4.0
+    version: 6.5.0
   open-collector:
     image: gcr.io/lrcollection/opencollector
-    version: 5.5.4
+    version: 5.6.0
   metrics:
     image: gcr.io/lrcollection/metrics
     version: 6.0.1
@@ -16,7 +16,7 @@ services:
     version: 6.0.3
   s3beat:
     image: gcr.io/lrcollection/beats/s3beat
-    version: 6.1.9
+    version: 6.2.0
   pubsubbeat:
     image: gcr.io/lrcollection/beats/pubsubbeat
     version: 6.0.1
@@ -40,7 +40,7 @@ services:
     version: 6.0.4
   oktabeat:
     image: gcr.io/lrcollection/beats/oktabeat
-    version: 6.0.2
+    version: 6.0.3
   kafkabeat:
     image: gcr.io/lrcollection/beats/kafkabeat
     version: 6.0.5
@@ -52,7 +52,7 @@ services:
     version: 6.0.2
   genericbeat:
     image: gcr.io/lrcollection/beats/genericbeat
-    version: 6.0.0
+    version: 6.1.0
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
