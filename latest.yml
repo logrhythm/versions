@@ -1,7 +1,7 @@
 services:
   lrctl:
-    image: gcr.io/lrcollection/lrctl
-    version: 6.4.0
+    image: gcr.io/datacollector-215718/lrctl
+    version: 6.4.0-octabeat_getconnection-dirty
   open-collector:
     image: gcr.io/lrcollection/opencollector
     version: 5.5.4
@@ -39,8 +39,8 @@ services:
     image: gcr.io/lrcollection/beats/carbonblackcloudbeat
     version: 6.0.4
   oktabeat:
-    image: gcr.io/lrcollection/beats/oktabeat
-    version: 6.0.2
+    image: gcr.io/datacollector-215718/beats/oktabeat
+    version: 6.0.2-octabeat_getconnection-dirty
   kafkabeat:
     image: gcr.io/lrcollection/beats/kafkabeat
     version: 6.0.5
