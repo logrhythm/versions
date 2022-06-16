@@ -1,10 +1,10 @@
 services:
   lrctl:
     image: gcr.io/lrcollection/lrctl
-    version: 6.5.1
+    version: 6.5.2
   open-collector:
     image: gcr.io/lrcollection/opencollector
-    version: 5.6.4
+    version: 5.6.6
   metrics:
     image: gcr.io/lrcollection/metrics
     version: 6.0.3
@@ -46,13 +46,16 @@ services:
     version: 6.0.6
   qualysfimbeat:
     image: gcr.io/lrcollection/beats/qualysfimbeat
-    version: 6.0.3
+    version: 6.0.4
   proofpointbeat:
     image: gcr.io/lrcollection/beats/proofpointbeat
     version: 6.0.3
   genericbeat:
     image: gcr.io/lrcollection/beats/genericbeat
     version: 6.1.1
+  symantecwssbeat:
+    image: gcr.io/lrcollection/beats/symantecwssbeat
+    version: 6.0.1
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
