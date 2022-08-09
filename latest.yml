@@ -1,7 +1,7 @@
 services:
   lrctl:
     image: gcr.io/datacollector-215718/lrctl
-    version: 6.5.2-add_cloud_env-dirty
+    version: 6.5.3-azureusgov-dirty
   open-collector:
     image: gcr.io/lrcollection/opencollector
     version: 5.6.0
@@ -10,7 +10,7 @@ services:
     version: 6.0.1
   eventhubbeat:
     image: gcr.io/datacollector-215718/beats/eventhubbeat
-    version: 6.0.7-azureUSGovCloud-dirty
+    version: 6.0.7-azureusgov-dirty
   gsbeat:
     image: gcr.io/lrcollection/beats/gsbeat
     version: 6.0.3
