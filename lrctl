@@ -8,10 +8,14 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="6.5.3"
+lrctl_version="6.4.0"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
+ocdb_repo="gcr.io/datacollector-215718"
+ocdb_version="6.0.1"
+ocadmin_repo="gcr.io/datacollector-215718"
+ocadmin_version="6.0.1"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
@@ -40,10 +44,10 @@ local_versions_realpath=""
 local_versions_mount_path="/lrctl/versions/versions.yml"
 
 # URLs to check
-prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/latest.yml"
+prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/latest.yml"
 container_registry_url="https://gcr.io"
 
-prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/lrctl"
+prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/lrctl"
 
 # Track the files that should be cleaned up. We add one file just to avoid the
 # array being empty.
@@ -594,6 +598,337 @@ processVersionsInfo() {
 
 }
 
+ocdbContainerStart(){
+  echo "### Create/Start OC-DB (\`oc-db\`) container for PostgreSQL using \`oc-db\` Volume..."
+  docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+  
+  echo "done"
+  echo "### SLEEPING 5 SECONDS TO GIVE \`oc-db\` A CHANCE TO START-UP..."
+  sleep 5
+}
+
+# === EZ OC Start ===
+
+#=====Initializing OC admin and start ===
+function initializingOcDB() {
+  echo "start initializing DB"
+  countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -c "select count(*) from public.\"rbacUserToRole\";"  || true )
+
+  echo $countUser
+
+  mkdir -p ocdbDir
+  cd ocdbDir
+  GITHUB_REPO_URL_BASE="https://raw.githubusercontent.com/logrhythm/versions/EZCloud"
+  DB_CREATION_SCRIPT=""
+  if [ "$1" == "start" ]
+  then
+    DB_CREATION_SCRIPT="create_database.sh"
+  else
+    DB_CREATION_SCRIPT="reset_ocAdmin_password.sh"
+  fi
+
+  echo ""
+  echo "Please provide a password for the default user is ocAdmin."
+  echo "Or press [CTRL]+[C] to abandon."
+  echo ""
+  echo "Rules:"
+  
+  # Prompt for pass if `OC_ADMIN_PASSWORD` isn't already set with at least a 6 character long password
+  # And keep looping until a 6+ character long password is provided, or user press CTRL+C
+  # Password verification is prompted to make sure the user knows which password it is, unlike Brandon Pace
+  PASSWORDS_DIDNT_MATCH=0
+  until false
+  do
+    if [[ $PASSWORDS_DIDNT_MATCH -eq 0 ]]
+    then
+      OC_ADMIN_PASSWORD_ONE=""
+      until false
+      do 
+        if [ ${#OC_ADMIN_PASSWORD_ONE} -gt 6 ]
+        then
+          break
+        else
+          echo " - Password must have a minimum of 6 characters"
+          echo ""
+          read -sp 'Password: ' OC_ADMIN_PASSWORD_ONE </dev/tty
+          echo ""
+          echo ""
+          
+        fi
+      done
+
+      read -sp 'Please re-enter to verify: ' OC_ADMIN_PASSWORD_TWO </dev/tty
+      echo ""
+      echo ""
+      if [ "$OC_ADMIN_PASSWORD_ONE" = "$OC_ADMIN_PASSWORD_TWO" ]; then
+        OC_ADMIN_PASSWORD="$OC_ADMIN_PASSWORD_ONE"
+        PASSWORDS_DIDNT_MATCH=1
+      else
+        echo "Error: Passwords do not match. Please try again."
+        PASSWORDS_DIDNT_MATCH=0
+      fi
+      OC_ADMIN_PASSWORD_ONE=""
+      OC_ADMIN_PASSWORD_TWO=""
+    else
+      break
+    fi
+  done
+
+  unset OC_ADMIN_PASSWORD_ONE
+  unset OC_ADMIN_PASSWORD_TWO
+
+  # Create a clean folder
+  echo "### CREATING A CLEAN DIRECTORY (\`./pgsql\`)..."
+  mkdir -p pgsql 2> /dev/null
+  echo "here!!"
+  # Clean up
+  #rm -f pgsql/create_database.sh 2> /dev/null
+  #rm -f pgsql/*.sql 2> /dev/null
+
+  echo "### WALK IN \`./pgsql\` DIRECTORY..."
+  cd pgsql
+
+  # Get the DB creation files
+  echo "### DOWNLOADING \"$GITHUB_REPO_URL_BASE/database/pgsql/$DB_CREATION_SCRIPT\"..."
+  curl -sSOL "$GITHUB_REPO_URL_BASE/database/pgsql/$DB_CREATION_SCRIPT"
+
+  if [ "$1" == "start" ]
+  then
+    echo "### PARSING \"$DB_CREATION_SCRIPT\" TO DISCOVER FILES TO DOWNLOAD..."
+    IFS=$(echo -en "\n\b")
+    for SQL_FILE_NAME in $(cat $DB_CREATION_SCRIPT | grep --only-matching "^\\s*cat\\s\+\"[0-9]\+[^\|]\+"  | grep --only-matching "\"[^\"]\+\"" | grep --only-matching "[^\"]\+")
+    do
+        echo "### DOWNLOADING \"$GITHUB_REPO_URL_BASE/database/pgsql/$SQL_FILE_NAME\"..."
+        curl -sSL "$GITHUB_REPO_URL_BASE/database/pgsql/$( echo "$SQL_FILE_NAME" | sed 's/ /%20/g' )" -o "$SQL_FILE_NAME"
+    done
+  else
+    SQL_FILE_NAME="20220819. - Reset OCAdmin Password.sql"
+    curl -sSL "$GITHUB_REPO_URL_BASE/database/pgsql/$( echo "$SQL_FILE_NAME" | sed 's/ /%20/g' )" -o "$SQL_FILE_NAME"
+  fi
+
+  echo "### RUN DATABASE CREATION SCRIPTS..."
+  chmod +x "$DB_CREATION_SCRIPT"
+  # Environment variable `OC_ADMIN_PASSWORD` will be used to create the `ocAdmin` user
+  export OC_ADMIN_PASSWORD
+  bash "$DB_CREATION_SCRIPT"
+  # Clear OC_ADMIN_PASSWORD
+  unset OC_ADMIN_PASSWORD
+  cd ..
+  echo "oc admin password set!"
+
+}
+
+function cleanImages() {
+  DOCKER_IMAGE_IDS=$( docker images | grep "$0" | awk '{print $3}' )
+  if [ -z "$DOCKER_IMAGE_IDS" -o "$DOCKER_IMAGE_IDS" == " " ]; then
+    echo "---- No images available for deletion ----"
+  else
+     docker rmi -f $DOCKER_IMAGE_IDS
+  fi
+}
+
+function cleanContainer() {
+  DOCKER_CONTAINER_IDS=$( docker ps -a -q -f name="$0" )
+  if [ -z "$DOCKER_CONTAINER_IDS" -o "$DOCKER_CONTAINER_IDS" == " " ]; then
+    echo "---- No Container available for deletion ----"
+  else
+     docker rm -f $DOCKER_CONTAINER_IDS
+  fi
+}
+
+processStartOC_DB(){
+  
+  isOcDbVolume=false
+  volumes=$(docker volume ls  --format '{{.Name}}')
+  for volume in $volumes
+  do
+    if [ "$volume" == "oc-db" ]
+    then
+      isOcDbVolume=true
+    fi
+  done
+  
+  #if [[ -n "$isOcDbVolume" ]]; then
+  if $isOcDbVolume 
+  then
+		isOcDbcontainer=$( docker ps -q -f name='oc-db' )
+		echo "$isOcDbcontainer"
+
+		if [[ -n "$isOcDbcontainer" ]]; then
+			echo "Already oc-db container running "
+		else
+			isOcDBImage=$( docker images -q ${ocadmin_repo}/oc-admin:${ocadmin_version} )
+			echo "$isOcDBImage" 
+			if [[ -n "$isOcDBImage" ]]; then
+				echo "Container starting oc-db"
+				docker start oc-db
+			else
+				echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
+				docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+			fi
+		fi
+  else
+    echo "### Create \`oc-db\` Volume..."
+    docker volume create oc-db
+    echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
+		docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+  fi
+}
+
+processStopOC_DB(){
+  #check oc-db container is up and runing or not
+  isOcAdmincontainer=$( docker ps -q -f name='oc-db' )
+  if [[ -n "$isOcAdmincontainer" ]]; 
+  then
+    echo "Stoping oc db..."
+    docker stop oc-db
+    echo "Stoped oc db!"
+  else
+    echo "No Container runing oc-db!!"
+  fi
+}
+
+processRestartOC_DB(){
+  #check oc-db container is up and runing or not
+  isOcAdmincontainer=$( docker ps -q -f name='oc-db' )
+  echo "$isOcAdmincontainer"
+  
+  if [[ -n "$isOcAdmincontainer" ]]; 
+  then
+      cleanContainer oc-db
+      cleanImages oc-db
+      processStartOC_DB
+  else
+      echo "no oc-db container started!!"
+  fi
+}
+
+processRestartOC_ADMIN(){
+  #check oc-admin container is up and runing or not
+  isOcAdmincontainer=$( docker ps -q -f name='oc-admin' )
+  echo "$isOcAdmincontainer"
+  if [[ -n "$isOcAdmincontainer" ]]; 
+  then
+      cleanContainer oc-admin
+      cleanImages oc-admin
+      processStartOC_ADMIN
+  else
+      echo "no oc-admin container started!! "
+  fi
+}
+
+processStartOC_ADMIN(){
+  #check oc-db container is up and runing or not
+  isOcDBcontainer=$( docker ps -q -f name='oc-db' )
+  if [[ -n "$isOcDBcontainer" ]];
+  then
+    #check oc-admn container is up and runing or not
+    isOcAdmincontainer=$( docker ps -q -f name='oc-admin' )
+    if [[ -n "$isOcAdmincontainer" ]]; then
+      echo "oc-admin already started"
+    else
+      #check oc-admin Database up and running or not
+      isDBAvailable=false
+      countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -X -A -w -t -c "select count(*) from public.\"rbacUserToRole\";"  || true )
+      if [[ -z "$countUser" ]]; 
+      then
+        isDBAvailable=false
+        echo "oc-admin datebase not available" 1>&2
+      else
+        if [[ "$countUser" > 0 ]];
+        then
+          isDBAvailable=true
+          echo "oc-admin datebase available"
+        else
+          isDBAvailable=false
+          echo "oc-admin user not available"
+        fi
+      fi
+      #if data base not available so create oc-admin DB
+      if $isDBAvailable 
+      then
+        echo "oc-admin datebase available"
+      else
+        initializingOcDB start
+      fi
+      #check oc-admin image available
+      isOcAdminImage=$( docker images -q ${ocadmin_repo}/oc-admin:${ocadmin_version} )
+      if [[ -n "$isOcAdmincontainer" ]]; 
+      then
+        echo "oc-admin starting !!"
+        docker start oc-admin
+        echo "oc-admin started !!!"
+      else
+        echo "### RUN \`oc-admin\` CONTAINER..."
+        docker run --detach --publish 8400:8400/tcp --network logrhythm --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
+        echo "oc-admin started !!!"
+      fi
+    fi
+  else
+    echo "OC DB is not running ,Please start OC DB first"
+  fi
+}
+
+resetAdminUser(){
+  processRestartOC_DB
+  #check oc-admin Database up and running or not
+  isDBAvailable=false
+  countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -X -A -w -t -c "select count(*) from public.\"rbacUserToRole\";"  || true )
+  if [[ -z "$countUser" ]]; 
+  then
+    isDBAvailable=false
+    echo "oc-admin datebase not available" 1>&2
+  else
+    if [[ "$countUser" > 0 ]];
+    then
+      isDBAvailable=true
+      echo "oc-admin datebase available"
+    else
+      isDBAvailable=false
+      echo "oc-admin user not available"
+    fi
+  fi
+
+  #if data base not available so create oc-admin DB
+  if $isDBAvailable 
+  then
+    initializingOcDB restart
+  else
+    echo "oc-admin either datebase not available or user not available"
+  fi   
+  processRestartOC_ADMIN
+  echo "reset new password"
+}
+
+processStopOC_ADMIN(){
+  isOcAdmincontainer=$( docker ps -q -f name='oc-admin' )
+  echo "$isOcAdmincontainer"
+  
+  if [[ -n "$isOcAdmincontainer" ]]; 
+  then
+      echo "stoping oc-admin..."
+      docker stop oc-admin
+      echo "stoped oc-admin!"
+  else
+      echo "no oc-admin container start"
+  fi
+}
+
+helpFunction(){
+  echo ""
+      echo "Usage:  pseudo_lrctl.sh [OPTIONS]"
+      echo ""
+      echo "Options:"
+      echo "   --help                Shows this help"
+      echo "   --oc-db-start         Start oc-db container"
+      echo "   --oc-db-stop          Stop oc-db container"
+      echo "   --oc-db-restart       Restart oc-db container"
+      echo "   --oc-admin-start      Start oc-admin container"
+      echo "   --oc-admin-stop       Stop oc-admin container"
+      echo "   --oc-admin-restart    Restart oc-admin container"
+      echo ""
+}
+# === EZ OC END ===
 # === MAIN PROCESSING ===
 
 # Create a new file handler (3) which will be used for the this script's
@@ -618,6 +953,7 @@ fi
 while (("$#")); do
   case "${1}" in
     "--lrctl-debug")
+      echo ${1}
       lrctl_debug=$(($lrctl_debug + 1))
       shift 1
       ;;
@@ -672,6 +1008,7 @@ case "${first_non_flag_arg:-}" in
     getScriptVersion
     ;;
   *)
+  
     # Check if args has autoupdate and no dev flag. Skip condition if it does.
     if [[ "${args[@]}" != *"autoupdate"* && "${args[@]}" != *"--dev"* ]]; then
       updateScript
@@ -688,7 +1025,49 @@ case "${first_non_flag_arg:-}" in
         pullLrctlImage
       fi
     fi
-    # Run the lrctl in the container
-    runLrctl "${args[@]}"
+
+     # Run the lrctl in the container
+    if [ "${args[0]}" == "oc-db" ] || [ "${args[0]}" == "oc-admin" ] 
+      then
+        if [ "${args[0]}" == "oc-db" ]
+          
+          then
+            case ${args[1]} in
+              #case 1
+              "--help") helpFunction ;;
+
+              #case 2
+              "start") processStartOC_DB ;;
+                
+              #case 3
+              "stop") processStopOC_DB ;;
+
+              #case 4
+              "restart") processRestartOC_DB ;;
+
+            esac
+        fi
+        if [ "${args[0]}" == "oc-admin" ]
+          then
+            case ${args[1]} in
+              #case 1
+              "--help") helpFunction ;;
+
+              #case 2
+              "start") processStartOC_ADMIN ;;
+                
+              #case 3
+              "stop") processStopOC_ADMIN ;;
+
+              #case 4
+              "restart") processRestartOC_ADMIN ;;
+
+              #case 5
+              "resetadminuser") resetAdminUser ;;
+            esac
+        fi 
+      else
+        runLrctl "${args[@]}" 
+    fi
     ;;
 esac
