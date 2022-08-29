@@ -715,6 +715,7 @@ function initializingOcDB() {
   # Clear OC_ADMIN_PASSWORD
   unset OC_ADMIN_PASSWORD
   cd ..
+  sleep 5
   echo "oc admin password set!"
 
 }
@@ -766,6 +767,8 @@ processStartOC_DB(){
 			else
 				echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
 				docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+        sleep 5
+        echo "oc db start"
 			fi
 		fi
   else
@@ -773,6 +776,8 @@ processStartOC_DB(){
     docker volume create oc-db
     echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
 		docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+    sleep 5
+    echo "oc db start"
   fi
 }
 
@@ -828,41 +833,48 @@ processStartOC_ADMIN(){
     if [[ -n "$isOcAdmincontainer" ]]; then
       echo "oc-admin already started"
     else
-      #check oc-admin Database up and running or not
-      isDBAvailable=false
-      countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -X -A -w -t -c "select count(*) from public.\"rbacUserToRole\";"  || true )
-      if [[ -z "$countUser" ]]; 
-      then
-        isDBAvailable=false
-        echo "oc-admin datebase not available" 1>&2
+      isOcAdmincontainer=$( docker ps -a -q -f name='oc-admin' )
+      if [[ -n "$isOcAdmincontainer" ]]; then
+        echo "oc-admin starting !!"
+          docker start oc-admin
+          echo "oc-admin started !!!"
       else
-        if [[ "$countUser" > 0 ]];
+        #check oc-admin Database up and running or not
+        isDBAvailable=false
+        countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -X -A -w -t -c "select count(*) from public.\"rbacUserToRole\";"  || true )
+        if [[ -z "$countUser" ]]; 
         then
-          isDBAvailable=true
+          isDBAvailable=false
+          echo "oc-admin datebase not available" 1>&2
+        else
+          if [[ "$countUser" > 0 ]];
+          then
+            isDBAvailable=true
+            echo "oc-admin datebase available"
+          else
+            isDBAvailable=false
+            echo "oc-admin user not available"
+          fi
+        fi
+        #if data base not available so create oc-admin DB
+        if $isDBAvailable 
+        then
           echo "oc-admin datebase available"
         else
-          isDBAvailable=false
-          echo "oc-admin user not available"
+          initializingOcDB start
         fi
-      fi
-      #if data base not available so create oc-admin DB
-      if $isDBAvailable 
-      then
-        echo "oc-admin datebase available"
-      else
-        initializingOcDB start
-      fi
-      #check oc-admin image available
-      isOcAdminImage=$( docker images -q ${ocadmin_repo}/oc-admin:${ocadmin_version} )
-      if [[ -n "$isOcAdmincontainer" ]]; 
-      then
-        echo "oc-admin starting !!"
-        docker start oc-admin
-        echo "oc-admin started !!!"
-      else
-        echo "### RUN \`oc-admin\` CONTAINER..."
-        docker run --detach --publish 8400:8400/tcp --network logrhythm --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
-        echo "oc-admin started !!!"
+        #check oc-admin image available
+        isOcAdminImage=$( docker images -q ${ocadmin_repo}/oc-admin:${ocadmin_version} )
+        if [[ -n "$isOcAdmincontainer" ]]; 
+        then
+          echo "oc-admin starting !!"
+          docker start oc-admin
+          echo "oc-admin started !!!"
+        else
+          echo "### RUN \`oc-admin\` CONTAINER..."
+          docker run --detach --publish 8400:8400/tcp --network logrhythm --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
+          echo "oc-admin started !!!"
+        fi
       fi
     fi
   else
