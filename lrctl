@@ -721,7 +721,7 @@ function initializingOcDB() {
 }
 
 function cleanImages() {
-  DOCKER_IMAGE_IDS=$( docker images | grep "$0" | awk '{print $3}' )
+  DOCKER_IMAGE_IDS=$( docker images | grep "$1" | awk '{print $3}' )
   if [ -z "$DOCKER_IMAGE_IDS" -o "$DOCKER_IMAGE_IDS" == " " ]; then
     echo "---- No images available for deletion ----"
   else
@@ -730,7 +730,7 @@ function cleanImages() {
 }
 
 function cleanContainer() {
-  DOCKER_CONTAINER_IDS=$( docker ps -a -q -f name="$0" )
+  DOCKER_CONTAINER_IDS=$( docker ps -a -q -f name="$1" )
   if [ -z "$DOCKER_CONTAINER_IDS" -o "$DOCKER_CONTAINER_IDS" == " " ]; then
     echo "---- No Container available for deletion ----"
   else
@@ -754,22 +754,27 @@ processStartOC_DB(){
   if $isOcDbVolume 
   then
 		isOcDbcontainer=$( docker ps -q -f name='oc-db' )
-		echo "$isOcDbcontainer"
-
+		
 		if [[ -n "$isOcDbcontainer" ]]; then
 			echo "Already oc-db container running "
 		else
-			isOcDBImage=$( docker images -q ${ocadmin_repo}/oc-admin:${ocadmin_version} )
-			echo "$isOcDBImage" 
-			if [[ -n "$isOcDBImage" ]]; then
-				echo "Container starting oc-db"
-				docker start oc-db
-			else
-				echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
-				docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
-        sleep 5
-        echo "oc db start"
-			fi
+
+      isCloseOcDbcontainer=$( docker ps -a -q -f name='oc-db' )
+      if [[ -n "$isCloseOcDbcontainer" ]]; then
+        docker start oc-db
+      else
+        isOcDBImage=$( docker images -q ${ocadmin_repo}/oc-db:${ocadmin_version} )
+        echo "$isOcDBImage" 
+        if [[ -n "$isOcDBImage" ]]; then
+          echo "Container starting oc-db"
+          docker start oc-db
+        else
+          echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
+          docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+          sleep 5
+          echo "oc db start"
+        fi
+      fi
 		fi
   else
     echo "### Create \`oc-db\` Volume..."
@@ -797,8 +802,7 @@ processStopOC_DB(){
 processRestartOC_DB(){
   #check oc-db container is up and runing or not
   isOcAdmincontainer=$( docker ps -q -f name='oc-db' )
-  echo "$isOcAdmincontainer"
-  
+ 
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
       cleanContainer oc-db
@@ -833,11 +837,11 @@ processStartOC_ADMIN(){
     if [[ -n "$isOcAdmincontainer" ]]; then
       echo "oc-admin already started"
     else
-      isOcAdmincontainer=$( docker ps -a -q -f name='oc-admin' )
-      if [[ -n "$isOcAdmincontainer" ]]; then
+      isCloseOcAdmincontainer=$( docker ps -a -q -f name='oc-admin' )
+      if [[ -n "$isCloseOcAdmincontainer" ]]; then
         echo "oc-admin starting !!"
-          docker start oc-admin
-          echo "oc-admin started !!!"
+        docker start oc-admin
+        echo "oc-admin started !!!"
       else
         #check oc-admin Database up and running or not
         isDBAvailable=false
