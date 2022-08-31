@@ -611,7 +611,7 @@ ocdbContainerStart(){
 #=====Initializing OC admin and start ===
 function initializingOcDB() {
   echo "start initializing DB"
-  strongPassword = false
+  strongPassword=false
   countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -c "select count(*) from public.\"rbacUserToRole\";"  || true )
   echo $countUser
 
@@ -658,7 +658,7 @@ function initializingOcDB() {
         fi
       done
 
-      strongPassword = false
+      strongPassword=false
       len="${#OC_ADMIN_PASSWORD_ONE}"
 
       if test $len -ge 6 ; then
@@ -678,22 +678,22 @@ function initializingOcDB() {
                               echo "$OC_ADMIN_PASSWORD_ONE" | grep -q [$,@,#,%,~,!,%,&,*]
 
                                 if test $? -eq 0 ; then
-                                  strongPassword = true
+                                  strongPassword=true
                                   echo "Strong password"
                             
                                 else
-                                  strongPassword = false
+                                  strongPassword=false
                                   echo "weak password include special chars"
                                 
                                 fi                       
       
                             else
-                              strongPassword = false
+                              strongPassword=false
                               echo "weak password include lower case char"
 
                             fi
                         else
-                          strongPassword = false
+                          strongPassword=false
                           echo "weak password include capital char" 
 
                       fi
@@ -704,7 +704,7 @@ function initializingOcDB() {
           fi
 
       else
-          strongPassword = false
+          strongPassword=false
           echo "password length should be greater than or equal 8 hence weak password"
 
       fi
