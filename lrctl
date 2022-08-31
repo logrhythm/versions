@@ -657,8 +657,59 @@ function initializingOcDB() {
         fi
       done
 
+      strongPassword = false
+      len="${#OC_ADMIN_PASSWORD_ONE}"
+
+      if test $len -ge 6 ; then
+
+          echo "$OC_ADMIN_PASSWORD_ONE" | grep -q [0-9]
+
+          if test $? -eq 0 ; then
+
+                echo "$OC_ADMIN_PASSWORD_ONE" | grep -q [A-Z]
+
+                      if test $? -eq 0 ; then
+
+                          echo "$OC_ADMIN_PASSWORD_ONE" | grep -q [a-z]
+
+                            if test $? -eq 0 ; then 
+
+                              echo "$OC_ADMIN_PASSWORD_ONE" | grep -q [$,@,#,%,~,!,%,&,*]
+
+                                if test $? -eq 0 ; then
+                                  strongPassword = true
+                                  echo "Strong password"
+                            
+                                else
+                                  strongPassword = false
+                                  echo "weak password include special chars"
+                                
+                                fi                       
+      
+                            else
+                              strongPassword = false
+                              echo "weak password include lower case char"
+
+                            fi
+                        else
+                          strongPassword = false
+                          echo "weak password include capital char" 
+
+                      fi
+                else
+
+            echo "please include the numbers in password it is weak password"   
+
+          fi
+
+      else
+          strongPassword = false
+          echo "password length should be greater than or equal 8 hence weak password"
+
+      fi
+
       #if [[ ${#OC_ADMIN_PASSWORD_ONE} -ge 6 && "$OC_ADMIN_PASSWORD_ONE" == *[A-Z]* && "$OC_ADMIN_PASSWORD_ONE" == *[a-z]* && "$OC_ADMIN_PASSWORD_ONE" == *[0-9]* ]] && [[ ! "$OC_ADMIN_PASSWORD_ONE"  =~ ^[a-zA-Z0-9]+$ ]]
-      if [[ ${#OC_ADMIN_PASSWORD_ONE} -ge 6 && "$OC_ADMIN_PASSWORD_ONE" == *[[:lower:]]* && "$OC_ADMIN_PASSWORD_ONE" == *[[:upper:]]* && "$OC_ADMIN_PASSWORD_ONE" == *[0-9]* ]]
+      if $strongPassword
       then
         read -sp 'Please re-enter to verify: ' OC_ADMIN_PASSWORD_TWO </dev/tty
         echo ""
