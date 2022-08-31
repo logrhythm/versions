@@ -675,7 +675,7 @@ function initializingOcDB() {
 
                             if test $? -eq 0 ; then 
 
-                              echo "$OC_ADMIN_PASSWORD_ONE" | grep -q [$,@,#,%,~,!,%,&,*]
+                              echo "$OC_ADMIN_PASSWORD_ONE" | grep -q \[$\,@\,#\,%\,~\,!\,%\,&\,*]
 
                                 if test $? -eq 0 ; then
                                   strongPassword=true
