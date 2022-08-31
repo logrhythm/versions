@@ -756,7 +756,7 @@ function cleanOcAdminImages() {
   fi
 }
 
-function cleanOcAddminContainer() {
+function cleanOcAdminContainer() {
   DOCKER_CONTAINER_IDS=$( docker ps -a -q -f name="oc-admin" )
   if [ -z "$DOCKER_CONTAINER_IDS" -o "$DOCKER_CONTAINER_IDS" == " " ]; then
     echo "---- No Container available for deletion ----"
@@ -793,7 +793,9 @@ processStartOC_DB(){
           cleanOcDbContainer
           cleanOcDbImages
           docker volume rm -f oc-db
-          processRestartOC_ADMIN
+          docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+          sleep 5
+          processStopOC_ADMIN
         else
           docker start oc-db
         fi
@@ -863,32 +865,34 @@ processRestartOC_ADMIN(){
 }
 
 function checkOcAdminDataBase(){
-   #check oc-admin Database up and running or not
+  #check oc-admin Database up and running or not
+  isDBAvailable=false
+  countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -X -A -w -t -c "select count(*) from public.\"rbacUserToRole\";"  || true ) 2> /dev/null
+  if [[ -z "$countUser" ]]; 
+  then
     isDBAvailable=false
-    countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -X -A -w -t -c "select count(*) from public.\"rbacUserToRole\";"  || true )
-    if [[ -z "$countUser" ]]; 
+    echo "oc-admin datebase not available" 1>&2
+  else
+    if [[ "$countUser" > 0 ]];
     then
-      isDBAvailable=false
-       echo "oc-admin datebase not available" 1>&2
+      isDBAvailable=true
+      echo "oc-admin datebase available"
     else
-      if [[ "$countUser" > 0 ]];
-      then
-        isDBAvailable=true
-        echo "oc-admin datebase available"
-      else
-        isDBAvailable=false
-        echo "oc-admin user not available"
-      fi
-      #if data base not available so create oc-admin DB
-      if $isDBAvailable 
-      then
-        echo "oc-admin datebase available"
-      else
-        "oc-admin database data is not present"
-        initializingOcDB start
-        sleep 10
-      fi
+      isDBAvailable=false
+      echo "oc-admin user not available"
     fi
+  fi
+
+  #if data base not available so create oc-admin DB
+  if $isDBAvailable 
+  then
+    echo "oc-admin datebase available"
+  else
+    echo "oc-admin database data is not present"
+    initializingOcDB start
+    sleep 10
+  fi
+  
 }
 
 processStartOC_ADMIN(){
