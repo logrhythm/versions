@@ -611,6 +611,7 @@ ocdbContainerStart(){
 #=====Initializing OC admin and start ===
 function initializingOcDB() {
   echo "start initializing DB"
+  strongPassword = false
   countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -c "select count(*) from public.\"rbacUserToRole\";"  || true )
   echo $countUser
 
