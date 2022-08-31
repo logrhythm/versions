@@ -612,7 +612,6 @@ ocdbContainerStart(){
 function initializingOcDB() {
   echo "start initializing DB"
   countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -c "select count(*) from public.\"rbacUserToRole\";"  || true )
-
   echo $countUser
 
   rm -rf ocdbDir 2> /dev/null
@@ -632,8 +631,7 @@ function initializingOcDB() {
   echo "Or press [CTRL]+[C] to abandon."
   echo ""
   echo "Rules:"
-  echo " - Password should have a mix of lowercase, uppercase, number and signs/non-alphanumerical characters"
-    
+  
   # Prompt for pass if `OC_ADMIN_PASSWORD` isn't already set with at least a 6 character long password
   # And keep looping until a 6+ character long password is provided, or user press CTRL+C
   # Password verification is prompted to make sure the user knows which password it is, unlike Brandon Pace
@@ -645,10 +643,11 @@ function initializingOcDB() {
       OC_ADMIN_PASSWORD_ONE=""
       until false
       do 
-        if [ ${#OC_ADMIN_PASSWORD_ONE} -gt 6 ]
+        if [ ${#OC_ADMIN_PASSWORD_ONE} -gt 5 ]
         then
           break
         else
+          echo " - Password should have a mix of lowercase, uppercase, number and signs/non-alphanumerical characters"
           echo " - Password must have a minimum of 6 characters"
           echo ""
           read -sp 'Password: ' OC_ADMIN_PASSWORD_ONE </dev/tty
@@ -658,18 +657,28 @@ function initializingOcDB() {
         fi
       done
 
-      read -sp 'Please re-enter to verify: ' OC_ADMIN_PASSWORD_TWO </dev/tty
-      echo ""
-      echo ""
-      if [ "$OC_ADMIN_PASSWORD_ONE" = "$OC_ADMIN_PASSWORD_TWO" ]; then
-        OC_ADMIN_PASSWORD="$OC_ADMIN_PASSWORD_ONE"
-        PASSWORDS_DIDNT_MATCH=1
+      if [[ ${#OC_ADMIN_PASSWORD_ONE} -ge 6 && "$OC_ADMIN_PASSWORD_ONE" == *[A-Z]* && "$OC_ADMIN_PASSWORD_ONE" == *[a-z]* && "$OC_ADMIN_PASSWORD_ONE" == *[0-9]* ]] && [[ ! "$OC_ADMIN_PASSWORD_ONE"  =~ ^[a-zA-Z0-9]+$ ]]
+      then
+        echo "alpha numeric"
+
+        read -sp 'Please re-enter to verify: ' OC_ADMIN_PASSWORD_TWO </dev/tty
+        echo ""
+        echo ""
+        if [ "$OC_ADMIN_PASSWORD_ONE" = "$OC_ADMIN_PASSWORD_TWO" ]; then
+          OC_ADMIN_PASSWORD="$OC_ADMIN_PASSWORD_ONE"
+          PASSWORDS_DIDNT_MATCH=1
+        else
+          echo "Error: Passwords do not match. Please try again."
+          PASSWORDS_DIDNT_MATCH=0
+        fi
+        OC_ADMIN_PASSWORD_ONE=""
+        OC_ADMIN_PASSWORD_TWO=""
       else
-        echo "Error: Passwords do not match. Please try again."
         PASSWORDS_DIDNT_MATCH=0
+        OC_ADMIN_PASSWORD_ONE=""
+        OC_ADMIN_PASSWORD_TWO=""
+        echo "not alpha numeric"
       fi
-      OC_ADMIN_PASSWORD_ONE=""
-      OC_ADMIN_PASSWORD_TWO=""
     else
       break
     fi
@@ -720,8 +729,8 @@ function initializingOcDB() {
 
 }
 
-function cleanImages() {
-  DOCKER_IMAGE_IDS=$( docker images | grep "$1" | awk '{print $3}' )
+function cleanOcDbImages() {
+  DOCKER_IMAGE_IDS=$( docker images | grep "oc-db" | awk '{print $3}' )
   if [ -z "$DOCKER_IMAGE_IDS" -o "$DOCKER_IMAGE_IDS" == " " ]; then
     echo "---- No images available for deletion ----"
   else
@@ -729,8 +738,26 @@ function cleanImages() {
   fi
 }
 
-function cleanContainer() {
-  DOCKER_CONTAINER_IDS=$( docker ps -a -q -f name="$1" )
+function cleanOcDbContainer() {
+  DOCKER_CONTAINER_IDS=$( docker ps -a -q -f name="oc-db" )
+  if [ -z "$DOCKER_CONTAINER_IDS" -o "$DOCKER_CONTAINER_IDS" == " " ]; then
+    echo "---- No Container available for deletion ----"
+  else
+     docker rm -f $DOCKER_CONTAINER_IDS
+  fi
+}
+
+function cleanOcAdminImages() {
+  DOCKER_IMAGE_IDS=$( docker images | grep "oc-admin" | awk '{print $3}' )
+  if [ -z "$DOCKER_IMAGE_IDS" -o "$DOCKER_IMAGE_IDS" == " " ]; then
+    echo "---- No images available for deletion ----"
+  else
+     docker rmi -f $DOCKER_IMAGE_IDS
+  fi
+}
+
+function cleanOcAddminContainer() {
+  DOCKER_CONTAINER_IDS=$( docker ps -a -q -f name="oc-admin" )
   if [ -z "$DOCKER_CONTAINER_IDS" -o "$DOCKER_CONTAINER_IDS" == " " ]; then
     echo "---- No Container available for deletion ----"
   else
@@ -761,7 +788,15 @@ processStartOC_DB(){
 
       isCloseOcDbcontainer=$( docker ps -a -q -f name='oc-db' )
       if [[ -n "$isCloseOcDbcontainer" ]]; then
-        docker start oc-db
+        isActiveOcAdminContainer=$( docker ps -q -f name='oc-admin' )
+        if [[ -n "$isActiveOcAdminContainer" ]]; then
+          cleanOcDbContainer
+          cleanOcDbImages
+          docker volume rm -f oc-db
+          processRestartOC_ADMIN
+        else
+          docker start oc-db
+        fi
       else
         isOcDBImage=$( docker images -q ${ocadmin_repo}/oc-db:${ocadmin_version} )
         echo "$isOcDBImage" 
@@ -805,8 +840,8 @@ processRestartOC_DB(){
  
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
-      cleanContainer oc-db
-      cleanImages oc-db
+      cleanOcDbContainer
+      cleanOcDbImages
       processStartOC_DB
   else
       echo "no oc-db container started!!"
@@ -819,12 +854,41 @@ processRestartOC_ADMIN(){
   echo "$isOcAdmincontainer"
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
-      cleanContainer oc-admin
-      cleanImages oc-admin
+      cleanOcAdminContainer
+      cleanOcAdminImages
       processStartOC_ADMIN
   else
       echo "no oc-admin container started!! "
   fi
+}
+
+function checkOcAdminDataBase(){
+   #check oc-admin Database up and running or not
+    isDBAvailable=false
+    countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -X -A -w -t -c "select count(*) from public.\"rbacUserToRole\";"  || true )
+    if [[ -z "$countUser" ]]; 
+    then
+      isDBAvailable=false
+       echo "oc-admin datebase not available" 1>&2
+    else
+      if [[ "$countUser" > 0 ]];
+      then
+        isDBAvailable=true
+        echo "oc-admin datebase available"
+      else
+        isDBAvailable=false
+        echo "oc-admin user not available"
+      fi
+      #if data base not available so create oc-admin DB
+      if $isDBAvailable 
+      then
+        echo "oc-admin datebase available"
+      else
+        "oc-admin database data is not present"
+        initializingOcDB start
+        sleep 10
+      fi
+    fi
 }
 
 processStartOC_ADMIN(){
@@ -837,37 +901,16 @@ processStartOC_ADMIN(){
     if [[ -n "$isOcAdmincontainer" ]]; then
       echo "oc-admin already started"
     else
+      #check oc-admin data base exits or not
+      checkOcAdminDataBase
+      #check oc-admn container is available or not
       isCloseOcAdmincontainer=$( docker ps -a -q -f name='oc-admin' )
       if [[ -n "$isCloseOcAdmincontainer" ]]; then
         echo "oc-admin starting !!"
         docker start oc-admin
         echo "oc-admin started !!!"
       else
-        #check oc-admin Database up and running or not
-        isDBAvailable=false
-        countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -X -A -w -t -c "select count(*) from public.\"rbacUserToRole\";"  || true )
-        if [[ -z "$countUser" ]]; 
-        then
-          isDBAvailable=false
-          echo "oc-admin datebase not available" 1>&2
-        else
-          if [[ "$countUser" > 0 ]];
-          then
-            isDBAvailable=true
-            echo "oc-admin datebase available"
-          else
-            isDBAvailable=false
-            echo "oc-admin user not available"
-          fi
-        fi
-        #if data base not available so create oc-admin DB
-        if $isDBAvailable 
-        then
-          echo "oc-admin datebase available"
-        else
-          initializingOcDB start
-        fi
-        #check oc-admin image available
+        #check oc-admin image available or not
         isOcAdminImage=$( docker images -q ${ocadmin_repo}/oc-admin:${ocadmin_version} )
         if [[ -n "$isOcAdmincontainer" ]]; 
         then
@@ -887,7 +930,7 @@ processStartOC_ADMIN(){
 }
 
 resetAdminUser(){
-  processRestartOC_DB
+  
   #check oc-admin Database up and running or not
   isDBAvailable=false
   countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -X -A -w -t -c "select count(*) from public.\"rbacUserToRole\";"  || true )
@@ -913,7 +956,9 @@ resetAdminUser(){
   else
     echo "oc-admin either datebase not available or user not available"
   fi   
+  sleep 10
   processRestartOC_ADMIN
+  sleep 5
   echo "reset new password"
 }
 
