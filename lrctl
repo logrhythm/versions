@@ -658,7 +658,7 @@ function initializingOcDB() {
       done
 
       #if [[ ${#OC_ADMIN_PASSWORD_ONE} -ge 6 && "$OC_ADMIN_PASSWORD_ONE" == *[A-Z]* && "$OC_ADMIN_PASSWORD_ONE" == *[a-z]* && "$OC_ADMIN_PASSWORD_ONE" == *[0-9]* ]] && [[ ! "$OC_ADMIN_PASSWORD_ONE"  =~ ^[a-zA-Z0-9]+$ ]]
-      [[ "$OC_ADMIN_PASSWORD_ONE" =~ ^[A-Za-z0-9#$+~!@%*]{6,}$ ]]
+      if [[ "$OC_ADMIN_PASSWORD_ONE" =~ ^[A-Za-z0-9#$+~!@%*]{6,}$ ]]
       then
         read -sp 'Please re-enter to verify: ' OC_ADMIN_PASSWORD_TWO </dev/tty
         echo ""
