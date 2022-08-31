@@ -648,7 +648,7 @@ function initializingOcDB() {
         then
           break
         else
-          echo " - Password should have a mix of lowercase, uppercase, number and signs/non-alphanumerical characters"
+          echo " - Password should have a mix of lowercase, uppercase, number and signs/non-alphanumerical(?,#,@,!,$,&,%) characters"
           echo " - Password must have a minimum of 6 characters"
           echo ""
           read -sp 'Password: ' OC_ADMIN_PASSWORD_ONE </dev/tty
