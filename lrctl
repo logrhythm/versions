@@ -836,7 +836,9 @@ processStartOC_DB(){
 		else
       isCloseOcDbcontainer=$( docker ps -a -q -f name='oc-db' )
       if [[ -n "$isCloseOcDbcontainer" ]]; then
+           echo "oc-db container starting..."
           docker start oc-db
+          echo "oc-db container started"
       else
         isOcDBImage=$( docker images -q ${ocadmin_repo}/oc-db:${ocadmin_version} )
         if [[ -n "$isOcDBImage" ]]; then
