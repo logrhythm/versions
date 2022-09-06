@@ -826,40 +826,29 @@ processStartOC_DB(){
       isOcDbVolume=true
     fi
   done
-  
-  #if [[ -n "$isOcDbVolume" ]]; then
+
   if $isOcDbVolume 
   then
 		isOcDbcontainer=$( docker ps -q -f name='oc-db' )
 		
 		if [[ -n "$isOcDbcontainer" ]]; then
-			echo "Already oc-db container running "
+			echo "oc-db container is already running"
 		else
-
       isCloseOcDbcontainer=$( docker ps -a -q -f name='oc-db' )
       if [[ -n "$isCloseOcDbcontainer" ]]; then
-        isActiveOcAdminContainer=$( docker ps -q -f name='oc-admin' )
-        if [[ -n "$isActiveOcAdminContainer" ]]; then
-          cleanOcDbContainer
-          cleanOcDbImages
-          docker volume rm -f oc-db
-          docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
-          sleep 5
-          processStopOC_ADMIN
-        else
           docker start oc-db
-        fi
       else
         isOcDBImage=$( docker images -q ${ocadmin_repo}/oc-db:${ocadmin_version} )
-        echo "$isOcDBImage" 
         if [[ -n "$isOcDBImage" ]]; then
-          echo "Container starting oc-db"
+          echo "oc-db container starting..."
           docker start oc-db
+          sleep 5
+          echo "oc-db container started"
         else
           echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
           docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
           sleep 5
-          echo "oc db start"
+          echo "oc-db container started"
         fi
       fi
 		fi
@@ -869,7 +858,7 @@ processStartOC_DB(){
     echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
 		docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
     sleep 5
-    echo "oc db start"
+    echo "oc-db container started"
   fi
 }
 
@@ -878,25 +867,28 @@ processStopOC_DB(){
   isOcAdmincontainer=$( docker ps -q -f name='oc-db' )
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
-    echo "Stoping oc db..."
+    echo "oc-db container stoping.."
     docker stop oc-db
-    echo "Stoped oc db!"
+    echo "oc-db container stoped"
   else
-    echo "No Container runing oc-db!!"
+    echo "no oc-db container started"
   fi
 }
 
 processRestartOC_DB(){
   #check oc-db container is up and runing or not
   isOcAdmincontainer=$( docker ps -q -f name='oc-db' )
- 
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
-      cleanOcDbContainer
-      cleanOcDbImages
-      processStartOC_DB
+      echo "oc-db container restart starting..."
+      docker stop oc-db
+      docker start oc-db
+      #cleanOcDbContainer
+      #cleanOcDbImages
+      #processStartOC_DB
+      echo "oc-db container restarted"
   else
-      echo "no oc-db container started!!"
+      echo "no oc-db container started"
   fi
 }
 
@@ -906,9 +898,13 @@ processRestartOC_ADMIN(){
   echo "$isOcAdmincontainer"
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
-      cleanOcAdminContainer
-      cleanOcAdminImages
-      processStartOC_ADMIN
+      echo "oc-admin container restart starting..."
+      docker stop oc-admin
+      docker start oc-admin
+      #cleanOcAdminContainer
+      #cleanOcAdminImages
+      #processStartOC_ADMIN
+      echo "oc-admin container restarted"
   else
       echo "no oc-admin container started!! "
   fi
@@ -941,8 +937,7 @@ function checkOcAdminDataBase(){
     echo "oc-admin database data is not present"
     initializingOcDB start
     sleep 10
-  fi
-  
+  fi 
 }
 
 processStartOC_ADMIN(){
@@ -953,33 +948,33 @@ processStartOC_ADMIN(){
     #check oc-admn container is up and runing or not
     isOcAdmincontainer=$( docker ps -q -f name='oc-admin' )
     if [[ -n "$isOcAdmincontainer" ]]; then
-      echo "oc-admin already started"
+      echo "oc-admin container is already running"
     else
       #check oc-admin data base exits or not
       checkOcAdminDataBase
       #check oc-admn container is available or not
       isCloseOcAdmincontainer=$( docker ps -a -q -f name='oc-admin' )
       if [[ -n "$isCloseOcAdmincontainer" ]]; then
-        echo "oc-admin starting !!"
+        echo "oc-admin container is starting..."
         docker start oc-admin
-        echo "oc-admin started !!!"
+        echo "oc-admin container started"
       else
         #check oc-admin image available or not
         isOcAdminImage=$( docker images -q ${ocadmin_repo}/oc-admin:${ocadmin_version} )
         if [[ -n "$isOcAdmincontainer" ]]; 
         then
-          echo "oc-admin starting !!"
+          echo "oc-admin container is starting..."
           docker start oc-admin
-          echo "oc-admin started !!!"
+          echo "oc-admin container started"
         else
           echo "### RUN \`oc-admin\` CONTAINER..."
           docker run --detach --publish 8400:8400/tcp --network logrhythm --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
-          echo "oc-admin started !!!"
+          echo "oc-admin container started"
         fi
       fi
     fi
   else
-    echo "OC DB is not running ,Please start OC DB first"
+    echo "oc-db container is not running ,Please start oc-db container first"
   fi
 }
 
@@ -1022,9 +1017,9 @@ processStopOC_ADMIN(){
   
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
-      echo "stoping oc-admin..."
+      echo "oc-admin container is stoping..."
       docker stop oc-admin
-      echo "stoped oc-admin!"
+      echo "oc-admin container stoped"
   else
       echo "no oc-admin container start"
   fi
