@@ -15,7 +15,7 @@ lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/datacollector-215718"
 ocdb_version="6.0.1"
 ocadmin_repo="gcr.io/datacollector-215718"
-ocadmin_version="6.0.1"
+ocadmin_version="6.0.3"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
@@ -618,7 +618,8 @@ function initializingOcDB() {
   rm -rf ocdbDir 2> /dev/null
   mkdir -p ocdbDir 2> /dev/null
   cd ocdbDir
-  GITHUB_REPO_URL_BASE="https://raw.githubusercontent.com/logrhythm/versions/EZCloud"
+  CONTAINER_DB_FILE_BASE="/app/database/pgsql"
+  #GITHUB_REPO_URL_BASE="https://raw.githubusercontent.com/logrhythm/versions/EZCloud"
   DB_CREATION_SCRIPT=""
   if [ "$1" == "start" ]
   then
@@ -740,7 +741,6 @@ function initializingOcDB() {
   # Create a clean folder
   echo "### CREATING A CLEAN DIRECTORY (\`./pgsql\`)..."
   mkdir -p pgsql 2> /dev/null
-  echo "here!!"
   # Clean up
   rm -f pgsql/create_database.sh 2> /dev/null
   rm -f pgsql/*.sql 2> /dev/null
@@ -749,21 +749,20 @@ function initializingOcDB() {
   cd pgsql
 
   # Get the DB creation files
-  echo "### DOWNLOADING \"$GITHUB_REPO_URL_BASE/database/pgsql/$DB_CREATION_SCRIPT\"..."
-  curl -sSOL "$GITHUB_REPO_URL_BASE/database/pgsql/$DB_CREATION_SCRIPT"
-
+  echo "### DOWNLOADING \"$CONTAINER_DB_FILE_BASE/$DB_CREATION_SCRIPT\"..."
+  docker exec -i oc-admin cat "$CONTAINER_DB_FILE_BASE/$DB_CREATION_SCRIPT" > "$DB_CREATION_SCRIPT"
   if [ "$1" == "start" ]
   then
     echo "### PARSING \"$DB_CREATION_SCRIPT\" TO DISCOVER FILES TO DOWNLOAD..."
     IFS=$(echo -en "\n\b")
     for SQL_FILE_NAME in $(cat $DB_CREATION_SCRIPT | grep --only-matching "^\\s*cat\\s\+\"[0-9]\+[^\|]\+"  | grep --only-matching "\"[^\"]\+\"" | grep --only-matching "[^\"]\+")
     do
-        echo "### DOWNLOADING \"$GITHUB_REPO_URL_BASE/database/pgsql/$SQL_FILE_NAME\"..."
-        curl -sSL "$GITHUB_REPO_URL_BASE/database/pgsql/$( echo "$SQL_FILE_NAME" | sed 's/ /%20/g' )" -o "$SQL_FILE_NAME"
+        echo "### DOWNLOADING \"$CONTAINER_DB_FILE_BASE/$SQL_FILE_NAME\"..."
+        docker exec -i oc-admin cat "$CONTAINER_DB_FILE_BASE/$SQL_FILE_NAME" > "$SQL_FILE_NAME"
     done
   else
     SQL_FILE_NAME="20220819. - Reset OCAdmin Password.sql"
-    curl -sSL "$GITHUB_REPO_URL_BASE/database/pgsql/$( echo "$SQL_FILE_NAME" | sed 's/ /%20/g' )" -o "$SQL_FILE_NAME"
+    docker exec -i oc-admin cat "$CONTAINER_DB_FILE_BASE/$SQL_FILE_NAME" > "$SQL_FILE_NAME"
   fi
 
   echo "### RUN DATABASE CREATION SCRIPTS..."
@@ -869,7 +868,7 @@ processStopOC_DB(){
   isOcAdmincontainer=$( docker ps -q -f name='oc-db' )
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
-    echo "oc-db container stoping.."
+    echo "oc-db container stopping.."
     docker stop oc-db
     echo "oc-db container stoped"
   else
@@ -883,8 +882,8 @@ processRestartOC_DB(){
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
       echo "oc-db container restart starting..."
-      docker stop oc-db
-      docker start oc-db
+      #docker stop oc-db
+      docker restart oc-db
       #cleanOcDbContainer
       #cleanOcDbImages
       #processStartOC_DB
@@ -901,8 +900,8 @@ processRestartOC_ADMIN(){
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
       echo "oc-admin container restart starting..."
-      docker stop oc-admin
-      docker start oc-admin
+      #docker stop oc-admin
+      docker restart oc-admin
       #cleanOcAdminContainer
       #cleanOcAdminImages
       #processStartOC_ADMIN
@@ -952,8 +951,6 @@ processStartOC_ADMIN(){
     if [[ -n "$isOcAdmincontainer" ]]; then
       echo "oc-admin container is already running"
     else
-      #check oc-admin data base exits or not
-      checkOcAdminDataBase
       #check oc-admn container is available or not
       isCloseOcAdmincontainer=$( docker ps -a -q -f name='oc-admin' )
       if [[ -n "$isCloseOcAdmincontainer" ]]; then
@@ -971,9 +968,12 @@ processStartOC_ADMIN(){
         else
           echo "### RUN \`oc-admin\` CONTAINER..."
           docker run --detach --publish 8400:8400/tcp --network logrhythm --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
-          echo "oc-admin container started"
         fi
       fi
+      sleep 5
+      #check oc-admin data base exits or not
+      checkOcAdminDataBase
+      echo "oc-admin container started"
     fi
   else
     echo "oc-db container is not running ,Please start oc-db container first"
@@ -1019,7 +1019,7 @@ processStopOC_ADMIN(){
   
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
-      echo "oc-admin container is stoping..."
+      echo "oc-admin container is stopping..."
       docker stop oc-admin
       echo "oc-admin container stoped"
   else
