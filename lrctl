@@ -1028,17 +1028,15 @@ processStopOC_ADMIN(){
 }
 
 helpFunction(){
-  echo ""
-      echo "Usage:  pseudo_lrctl.sh [OPTIONS]"
-      echo ""
+ 
       echo "Options:"
       echo "   --help                Shows this help"
-      echo "   --oc-db-start         Start oc-db container"
-      echo "   --oc-db-stop          Stop oc-db container"
-      echo "   --oc-db-restart       Restart oc-db container"
-      echo "   --oc-admin-start      Start oc-admin container"
-      echo "   --oc-admin-stop       Stop oc-admin container"
-      echo "   --oc-admin-restart    Restart oc-admin container"
+      echo "   oc-db start         Start oc-db container"
+      echo "   oc-db stop          Stop oc-db container"
+      echo "   oc-db restart       Restart oc-db container"
+      echo "   oc-admin start      Start oc-admin container"
+      echo "   oc-admin stop       Stop oc-admin container"
+      echo "   oc-admin restart    Restart oc-admin container"
       echo ""
 }
 # === EZ OC END ===
