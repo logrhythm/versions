@@ -629,7 +629,7 @@ function initializingOcDB() {
   fi
 
   echo ""
-  echo "Please provide a password for the default user is ocAdmin."
+  echo "Please provide a password for the default user ocAdmin."
   echo "Or press [CTRL]+[C] to abandon."
   echo ""
   echo "Rules:"
@@ -684,29 +684,29 @@ function initializingOcDB() {
                             
                                 else
                                   strongPassword=false
-                                  echo "weak password include special chars"
+                                  echo "weak password. Please include special chars"
                                 
                                 fi                       
       
                             else
                               strongPassword=false
-                              echo "weak password include lower case char"
+                              echo "weak password. Please include lower case char"
 
                             fi
                         else
                           strongPassword=false
-                          echo "weak password include capital char" 
+                          echo "weak password. Please include capital char" 
 
                       fi
                 else
 
-            echo "please include the numbers in password it is weak password"   
+            echo "weak password. Please include numbers"   
 
           fi
 
       else
           strongPassword=false
-          echo "password length should be greater than or equal 8 hence weak password"
+          echo "weak password. Please enter a password with a minimum of 6 characters"
 
       fi
 
@@ -774,7 +774,7 @@ function initializingOcDB() {
   unset OC_ADMIN_PASSWORD
   cd ..
   sleep 5
-  echo "oc admin password set!"
+  echo "Password set for user ocAdmin."
 
 }
 
@@ -870,7 +870,7 @@ processStopOC_DB(){
   then
     echo "oc-db container stopping.."
     docker stop oc-db
-    echo "oc-db container stoped"
+    echo "oc-db container stopped"
   else
     echo "no oc-db container started"
   fi
@@ -899,7 +899,7 @@ processRestartOC_ADMIN(){
   echo "$isOcAdmincontainer"
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
-      echo "oc-admin container restart starting..."
+      echo "oc-admin container restarting..."
       #docker stop oc-admin
       docker restart oc-admin
       #cleanOcAdminContainer
@@ -907,7 +907,7 @@ processRestartOC_ADMIN(){
       #processStartOC_ADMIN
       echo "oc-admin container restarted"
   else
-      echo "no oc-admin container started!! "
+      echo "no oc-admin container restarted"
   fi
 }
 
@@ -918,24 +918,24 @@ function checkOcAdminDataBase(){
   if [[ -z "$countUser" ]]; 
   then
     isDBAvailable=false
-    echo "oc-admin datebase not available" 1>&2
+    echo "oc-admin database not available" 1>&2
   else
     if [[ "$countUser" > 0 ]];
     then
       isDBAvailable=true
-      echo "oc-admin datebase available"
+      echo "oc-admin database available"
     else
       isDBAvailable=false
-      echo "oc-admin user not available"
+      echo "ocAdmin user not available"
     fi
   fi
 
   #if data base not available so create oc-admin DB
   if $isDBAvailable 
   then
-    echo "oc-admin datebase available"
+    echo "oc-admin database available"
   else
-    echo "oc-admin database data is not present"
+    echo "oc-admin database is not present"
     initializingOcDB start
     sleep 10
   fi 
@@ -976,7 +976,7 @@ processStartOC_ADMIN(){
       echo "oc-admin container started"
     fi
   else
-    echo "oc-db container is not running ,Please start oc-db container first"
+    echo "oc-db container is not running. Please start oc-db container first"
   fi
 }
 
@@ -988,12 +988,12 @@ resetAdminUser(){
   if [[ -z "$countUser" ]]; 
   then
     isDBAvailable=false
-    echo "oc-admin datebase not available" 1>&2
+    echo "oc-admin database not available" 1>&2
   else
     if [[ "$countUser" > 0 ]];
     then
       isDBAvailable=true
-      echo "oc-admin datebase available"
+      echo "oc-admin database available"
     else
       isDBAvailable=false
       echo "oc-admin user not available"
@@ -1005,12 +1005,9 @@ resetAdminUser(){
   then
     initializingOcDB restart
   else
-    echo "oc-admin either datebase not available or user not available"
+    echo "Either oc-admin database not available or ocAdmin user not available"
   fi   
-  sleep 10
-  processRestartOC_ADMIN
-  sleep 5
-  echo "reset new password"
+  echo "New password set"
 }
 
 processStopOC_ADMIN(){
@@ -1021,22 +1018,22 @@ processStopOC_ADMIN(){
   then
       echo "oc-admin container is stopping..."
       docker stop oc-admin
-      echo "oc-admin container stoped"
+      echo "oc-admin container stopped"
   else
-      echo "no oc-admin container start"
+      echo "no oc-admin container stopped"
   fi
 }
 
 helpFunction(){
- 
+      echo ""
       echo "Options:"
       echo "   --help                Shows this help"
-      echo "   oc-db start         Start oc-db container"
-      echo "   oc-db stop          Stop oc-db container"
-      echo "   oc-db restart       Restart oc-db container"
-      echo "   oc-admin start      Start oc-admin container"
-      echo "   oc-admin stop       Stop oc-admin container"
-      echo "   oc-admin restart    Restart oc-admin container"
+      echo "   --oc-db-start         Start oc-db container"
+      echo "   --oc-db-stop          Stop oc-db container"
+      echo "   --oc-db-restart       Restart oc-db container"
+      echo "   --oc-admin-start      Start oc-admin container"
+      echo "   --oc-admin-stop       Stop oc-admin container"
+      echo "   --oc-admin-restart    Restart oc-admin container"
       echo ""
 }
 # === EZ OC END ===
