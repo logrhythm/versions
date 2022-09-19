@@ -968,9 +968,10 @@ processStartOC_ADMIN(){
         else
           echo "### RUN \`oc-admin\` CONTAINER..."
           docker run --detach --publish 8400:8400/tcp --network logrhythm --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
+          sleep 10
         fi
       fi
-      sleep 5
+      sleep 10
       #check oc-admin data base exits or not
       checkOcAdminDataBase
       echo "oc-admin container started"
