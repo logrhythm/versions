@@ -843,12 +843,12 @@ processStartOC_DB(){
         if [[ -n "$isOcDBImage" ]]; then
           echo "oc-db container starting..."
           docker start oc-db
-          sleep 5
+          sleep 10
           echo "oc-db container started"
         else
           echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
           docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
-          sleep 5
+          sleep 10
           echo "oc-db container started"
         fi
       fi
@@ -858,7 +858,7 @@ processStartOC_DB(){
     docker volume create oc-db
     echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
 		docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
-    sleep 5
+    sleep 10
     echo "oc-db container started"
   fi
 }
