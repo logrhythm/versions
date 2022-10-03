@@ -58,7 +58,7 @@ services:
     version: 6.0.2
   msgraphbeat:
     image: gcr.io/lrcollection/beats/msgraphbeat
-    version: 6.0.4
+    version: 6.0.4-msgraph_timeout_issue-dirty
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
