@@ -57,7 +57,7 @@ services:
     image: gcr.io/lrcollection/beats/symantecwssbeat
     version: 6.0.2
   msgraphbeat:
-    image: gcr.io/lrcollection/beats/msgraphbeat
+    image: gcr.io/datacollector-215718/beats/msgraphbeat
     version: 6.0.4-msgraph_timeout_issue-dirty
 utilities:
   lrjq:
