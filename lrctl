@@ -8,13 +8,13 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="6.4.0"
+lrctl_version="6.5.5"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
-ocdb_repo="gcr.io/datacollector-215718"
+ocdb_repo="gcr.io/lrcollection"
 ocdb_version="6.0.1"
-ocadmin_repo="gcr.io/datacollector-215718"
+ocadmin_repo="gcr.io/lrcollection"
 ocadmin_version="6.0.4"
 
 lrctl_volume_mounts=()
@@ -1063,7 +1063,6 @@ fi
 while (("$#")); do
   case "${1}" in
     "--lrctl-debug")
-      echo ${1}
       lrctl_debug=$(($lrctl_debug + 1))
       shift 1
       ;;
