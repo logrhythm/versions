@@ -37,7 +37,7 @@ services:
     version: 6.0.5
   carbonblackcloudbeat:
     image: gcr.io/datacollector-215718/beats/carbonblackcloudbeat
-    version: 6.0.5-cb_time_lag_issue-dirty
+    version: 6.0.6-cb_time_lag_issue-dirty
   oktabeat:
     image: gcr.io/lrcollection/beats/oktabeat
     version: 6.0.4
