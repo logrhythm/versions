@@ -8,14 +8,14 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="6.5.5"
+lrctl_version="6.5.6"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/lrcollection"
-ocdb_version="6.0.1"
+ocdb_version="6.0.2"
 ocadmin_repo="gcr.io/lrcollection"
-ocadmin_version="6.0.4"
+ocadmin_version="6.0.5"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
