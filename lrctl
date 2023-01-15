@@ -15,7 +15,7 @@ lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/lrcollection"
 ocdb_version="6.0.2"
 ocadmin_repo="gcr.io/lrcollection"
-ocadmin_version="6.0.5"
+ocadmin_version="6.0.6"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
@@ -967,7 +967,7 @@ processStartOC_ADMIN(){
           echo "oc-admin container started"
         else
           echo "### RUN \`oc-admin\` CONTAINER..."
-          docker run --detach --publish 8400:8400/tcp --network logrhythm --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
+          docker run --detach --restart unless-stopped --publish 8400:8400/tcp --network logrhythm --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
           sleep 10
         fi
       fi
