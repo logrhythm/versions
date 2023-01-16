@@ -8,14 +8,14 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="6.5.6"
+lrctl_version="6.5.5"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/lrcollection"
 ocdb_version="6.0.2"
-ocadmin_repo="gcr.io/lrcollection"
-ocadmin_version="6.0.5"
+ocadmin_repo="tonymasse"
+ocadmin_version="v1.0.1"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
@@ -44,10 +44,11 @@ local_versions_realpath=""
 local_versions_mount_path="/lrctl/versions/versions.yml"
 
 # URLs to check
-prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/latest.yml"
+prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/oc_admin_v1.1.0/latest.yml"
 container_registry_url="https://gcr.io"
 
-prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/lrctl"
+# prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/lrctl"
+prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/oc_admin_v1.1.0/lrctl"
 
 # Track the files that should be cleaned up. We add one file just to avoid the
 # array being empty.
@@ -440,7 +441,7 @@ updateScript() {
   # Attempt to curl the updated lrctl script from the prod URL
   # If the curl returns a non-zero exit code, fail
   local temp_file="${BASH_SOURCE[0]}_temp"
-  curl --silent --fail "${prod_script_file_url}" > "${temp_file}"
+  curl --silent --fail --location "${prod_script_file_url}" > "${temp_file}"
   if [[ $? -ne "0" ]]; then
     echo "Failed to fetch ${prod_script_file_url}."
     rm -f "${temp_file}"
