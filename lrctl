@@ -14,8 +14,8 @@ lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/lrcollection"
 ocdb_version="6.0.2"
-ocadmin_repo="tonymasse"
-ocadmin_version="v1.1.0"
+ocadmin_repo="gcr.io/lrcollection"
+ocadmin_version="6.0.5"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
