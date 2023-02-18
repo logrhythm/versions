@@ -3,8 +3,8 @@ services:
     image: gcr.io/lrcollection/lrctl
     version: 6.5.7
   open-collector:
-    image: gcr.io/lrcollection/opencollector
-    version: 5.6.13
+    image: gcr.io/datacollector-215718/opencollector
+    version: 5.6.14-eventhub_jqfix-dirty
   metrics:
     image: gcr.io/lrcollection/metrics
     version: 6.0.4
