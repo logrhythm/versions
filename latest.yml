@@ -1,10 +1,10 @@
 services:
   lrctl:
     image: gcr.io/lrcollection/lrctl
-    version: 6.5.7
+    version: 6.5.8
   open-collector:
     image: gcr.io/lrcollection/opencollector
-    version: 5.6.13
+    version: 5.6.14
   metrics:
     image: gcr.io/lrcollection/metrics
     version: 6.0.4
@@ -55,10 +55,13 @@ services:
     version: 6.1.2
   symantecwssbeat:
     image: gcr.io/lrcollection/beats/symantecwssbeat
-    version: 6.0.2
+    version: 6.0.3
   msgraphbeat:
     image: gcr.io/lrcollection/beats/msgraphbeat
     version: 6.0.4
+  prismacloudbeat:
+    image: gcr.io/lrcollection/beats/prismacloudbeat
+    version: 6.0.0
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
