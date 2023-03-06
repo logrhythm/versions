@@ -1,7 +1,7 @@
 services:
   lrctl:
-    image: gcr.io/lrcollection/lrctl
-    version: 6.5.7
+    image: gcr.io/datacollector-215718/lrctl
+    version: 6.5.5-ENG-26776_MSGRAPH_400_ISSUE-dirty
   open-collector:
     image: gcr.io/lrcollection/opencollector
     version: 5.6.13
@@ -57,8 +57,8 @@ services:
     image: gcr.io/lrcollection/beats/symantecwssbeat
     version: 6.0.2
   msgraphbeat:
-    image: gcr.io/lrcollection/beats/msgraphbeat
-    version: 6.0.4
+    image: gcr.io/datacollector-215718/beats/msgraphbeat
+    version: 6.0.4-ENG-26776_MSGRAPH_400_ISSUE-dirty
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
