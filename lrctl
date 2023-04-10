@@ -259,13 +259,21 @@ ensureUserIsInDockerGroup() {
 
 # check if docker is installed on machine
 installDockerCE() {
-  curl -fsSL https://get.docker.com/ | sh
-  sudo systemctl start docker
-  sudo systemctl enable docker
-  # Disable exit on error so that we can capture the return status from ensureUserIsInDockerGroup.
-  set +e
-  ensureUserIsInDockerGroup
-  set -e
+    # Check if the distribution is Oracle
+    if [[ $(get_distribution) == "ol" ]]; then
+        echo "Installing docker for Oracle Linux"
+        dnf remove -y runc
+        dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+        dnf install -y docker-ce --nobest
+    else
+        curl -fsSL https://get.docker.com/ | sh
+    fi
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    # Disable exit on error so that we can capture the return status from ensureUserIsInDockerGroup.
+    set +e
+    ensureUserIsInDockerGroup
+    set -e
 }
 
 get_distribution() {
