@@ -8,14 +8,14 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="6.5.9"
+lrctl_version="6.5.10"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/lrcollection"
 ocdb_version="6.0.2"
 ocadmin_repo="gcr.io/lrcollection"
-ocadmin_version="6.0.9"
+ocadmin_version="6.0.11"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
@@ -259,13 +259,21 @@ ensureUserIsInDockerGroup() {
 
 # check if docker is installed on machine
 installDockerCE() {
-  curl -fsSL https://get.docker.com/ | sh
-  sudo systemctl start docker
-  sudo systemctl enable docker
-  # Disable exit on error so that we can capture the return status from ensureUserIsInDockerGroup.
-  set +e
-  ensureUserIsInDockerGroup
-  set -e
+    # Check if the distribution is Oracle
+    if [[ $(get_distribution) == "ol" ]]; then
+        echo "Installing docker for Oracle Linux"
+        dnf remove -y runc
+        dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+        dnf install -y docker-ce --nobest
+    else
+        curl -fsSL https://get.docker.com/ | sh
+    fi
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    # Disable exit on error so that we can capture the return status from ensureUserIsInDockerGroup.
+    set +e
+    ensureUserIsInDockerGroup
+    set -e
 }
 
 get_distribution() {
