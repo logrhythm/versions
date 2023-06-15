@@ -1,10 +1,10 @@
 services:
   lrctl:
     image: gcr.io/lrcollection/lrctl
-    version: 6.5.9
+    version: 6.5.11
   open-collector:
     image: gcr.io/lrcollection/opencollector
-    version: 5.6.15
+    version: 5.6.17
   metrics:
     image: gcr.io/lrcollection/metrics
     version: 6.0.4
@@ -16,7 +16,7 @@ services:
     version: 6.0.4
   s3beat:
     image: gcr.io/lrcollection/beats/s3beat
-    version: 6.2.1
+    version: 6.2.2
   pubsubbeat:
     image: gcr.io/lrcollection/beats/pubsubbeat
     version: 6.0.3
@@ -62,6 +62,9 @@ services:
   prismacloudbeat:
     image: gcr.io/lrcollection/beats/prismacloudbeat
     version: 6.0.1
+  darktracebeat:
+    image: gcr.io/lrcollection/beats/darktracebeat
+    version: 6.0.0
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
