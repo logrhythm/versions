@@ -8,7 +8,7 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="6.5.11"
+lrctl_version="6.5.12"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
@@ -259,9 +259,10 @@ ensureUserIsInDockerGroup() {
 
 # check if docker is installed on machine
 installDockerCE() {
-    # Check if the distribution is Oracle
-    if [[ $(get_distribution) == "ol" ]]; then
-        echo "Installing docker for Oracle Linux"
+    # Check if the distribution is Oracle or Rocky
+    lsb_dis=$(get_distribution)
+    if [[ ( "$lsb_dis" == "ol" ) || ( "$lsb_dis" == "rocky" ) ]]; then
+        echo "Installing docker.."
         dnf remove -y runc
         dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
         dnf install -y docker-ce --nobest
