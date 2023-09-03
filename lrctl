@@ -559,7 +559,7 @@ runLrctl() {
             docker rm -f lrctl_svc
         fi
       fi 
-      docker_args=(-d --name lrctl_svc --hostname ${hostnameSvc}  --env hostName=${hostnameSvc}  --env script_version=${lrctl_version} --env ipv=$(hostname -I | cut -f1 -d' ') -v lrctl_logs_svc:/app/cmd/beats/lrctl/logs)
+      docker_args=(-d --name lrctl_svc --env hostName=${hostnameSvc} --env script_version=${lrctl_version} --env ipv=$(hostname -I | cut -f1 -d' ') -v lrctl_logs_svc:/app/cmd/beats/lrctl/logs)
     else
       docker_args=(-i --rm --name lrctl --env script_version=${lrctl_version})
     fi
