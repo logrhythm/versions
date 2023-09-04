@@ -568,9 +568,11 @@ runLrctl() {
       docker_args+=(-v "${vol_mount}")
     done
 
-    if [[ -n "${local_versions_realpath}" ]]; then
-      local mount_dir=$(dirname "${local_versions_mount_path}")
-      docker_args+=(-v "${local_versions_volume}:${mount_dir}")
+    if [[ "${args[0]}" != "lrctl" ]]; then
+      if [[ -n "${local_versions_realpath}" ]]; then
+        local mount_dir=$(dirname "${local_versions_mount_path}")
+        docker_args+=(-v "${local_versions_volume}:${mount_dir}")
+      fi
     fi
 
     if [[ -t 0 ]]; then
