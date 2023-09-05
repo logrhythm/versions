@@ -17,7 +17,7 @@ ocdb_version="6.0.2"
 ocadmin_repo="gcr.io/lrcollection"
 ocadmin_version="6.0.12"
 hostnameSvc="$(hostname)"
-lrctl_SVC_detache="false"
+isLongRunningDetached="false"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
@@ -46,11 +46,11 @@ local_versions_realpath=""
 local_versions_mount_path="/lrctl/versions/versions.yml"
 
 # URLs to check
-prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/lrctl_long_running/latest.yml"
+prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/LRS/latest.yml"
 container_registry_url="https://gcr.io"
 
 # prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/lrctl"
-prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/lrctl_long_running/lrctl"
+prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/LRS/lrctl"
 
 # Track the files that should be cleaned up. We add one file just to avoid the
 # array being empty.
@@ -558,6 +558,7 @@ runLrctl() {
         isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
         if [[ -n "$isLongRunningContainer"  ]]; then
             docker rm -f lrctl_svc
+	    isLongRunningDetached="true"
         fi
       fi 
       lrctl_SVC_detache="true"
@@ -570,12 +571,12 @@ runLrctl() {
       docker_args+=(-v "${vol_mount}")
     done
 
-    #if [[ "${lrctl_SVC_detache}" != "true" ]]; then
-    if [[ -n "${local_versions_realpath}" ]]; then
+    if [[ "$isLongRunningDetached" != "true" ]]; then
+      if [[ -n "${local_versions_realpath}" ]]; then
         local mount_dir=$(dirname "${local_versions_mount_path}")
         docker_args+=(-v "${local_versions_volume}:${mount_dir}")
+      fi
     fi
-    #fi
 
     if [[ -t 0 ]]; then
       docker_args+=(-t)
