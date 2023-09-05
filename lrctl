@@ -570,12 +570,12 @@ runLrctl() {
       docker_args+=(-v "${vol_mount}")
     done
 
-    if [[ "${lrctl_SVC_detache}" != "true" ]]; then
-      if [[ -n "${local_versions_realpath}" ]]; then
+    #if [[ "${lrctl_SVC_detache}" != "true" ]]; then
+    if [[ -n "${local_versions_realpath}" ]]; then
         local mount_dir=$(dirname "${local_versions_mount_path}")
         docker_args+=(-v "${local_versions_volume}:${mount_dir}")
-      fi
     fi
+    #fi
 
     if [[ -t 0 ]]; then
       docker_args+=(-t)
