@@ -17,7 +17,7 @@ ocdb_version="6.0.2"
 ocadmin_repo="gcr.io/lrcollection"
 ocadmin_version="6.0.12"
 hostnameSvc="$(hostname)"
-lrctl_SVC_detache="false"
+isLongRunningDetached="false"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
@@ -558,9 +558,10 @@ runLrctl() {
         isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
         if [[ -n "$isLongRunningContainer"  ]]; then
             docker rm -f lrctl_svc
+	    isLongRunningDetached="true"
         fi
       fi 
-      lrctl_SVC_detache="true"
+      isLongRunningDetached="true"
       docker_args=(-d --name lrctl_svc --env hostName=${hostnameSvc} --env script_version=${lrctl_version} --env ipv=$(hostname -I | cut -f1 -d' ') -v lrctl_logs_svc:/app/cmd/beats/lrctl/logs)
     else
       docker_args=(-i --rm --name lrctl --env script_version=${lrctl_version})
@@ -570,12 +571,12 @@ runLrctl() {
       docker_args+=(-v "${vol_mount}")
     done
 
-    #if [[ "${lrctl_SVC_detache}" != "true" ]]; then
-    if [[ -n "${local_versions_realpath}" ]]; then
+    if [[ "$isLongRunningDetached" != "true" ]]; then
+      if [[ -n "${local_versions_realpath}" ]]; then
         local mount_dir=$(dirname "${local_versions_mount_path}")
         docker_args+=(-v "${local_versions_volume}:${mount_dir}")
+      fi
     fi
-    #fi
 
     if [[ -t 0 ]]; then
       docker_args+=(-t)
