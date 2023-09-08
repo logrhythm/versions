@@ -669,8 +669,9 @@ runLrctlSVC() {
       isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
       if [[ -z "$isLongRunningContainer" ]]; then
         #runLongRunningLrctl
-        runLrctl "${args[@]}"
+        runLrctlSVC "${args[@]}"
       fi
+      echo " start detach mode"
     fi
   echo "${args[0]}" "service" "${args[1]}ed"
 }
