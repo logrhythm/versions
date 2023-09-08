@@ -665,14 +665,14 @@ runLrctlSVC() {
     docker run "${docker_args[@]}"
     
     
-    if [[ "${args[0]}" == "lrctl" && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start") ]]; then
+    if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl") && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start") ]]; then
       isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
       if [[ -z "$isLongRunningContainer" ]]; then
         #runLongRunningLrctl
         runLrctl "${args[@]}"
       fi
     fi
-  echo "${args[0]}" "service" "${args[1]}"
+  echo "${args[0]}" "service" "${args[1]}ed"
 }
 
 processVersionsInfo() {
