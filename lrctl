@@ -1343,12 +1343,12 @@ case "${first_non_flag_arg:-}" in
           if [ "${args[0]}" == "lrctl_svc" ]
           then
               echo "${args[0]}"
-              args[0] ="lrctl"
+              args[0]="lrctl"
           fi
           if [ "${args[2]}" == "lrctl_svc" ]
           then
             echo "${args[2]}"
-            args[2] ="lrctl"
+            args[2]="lrctl"
           fi
           runLrctlSVC "${args[@]}" 
         else
