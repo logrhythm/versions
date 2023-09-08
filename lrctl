@@ -675,6 +675,9 @@ runLrctlSVC() {
       fi
       echo " start detach mode"
     fi
+   if [[ ("${args[0]}" == "lrctl") ]]; then
+      echo "hello i m here"
+   fi
     echo "${args[0]}" "service" "${args[1]}ed"
 }
 
