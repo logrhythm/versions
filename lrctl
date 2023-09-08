@@ -615,7 +615,7 @@ runLrctl() {
 # Run the LRCTL Long Running container
 runLrctlSVC() {
     echo "inside runLrctlSVC"
-    if [[ "${args[0]}" == "lrctl" && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[1]}" == "restart") ]]; then
+    if [[ ("${args[0]}" == "lrctl" || "${args[0]}" == "lrctl")  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[1]}" == "restart") ]]; then
 
       if [[ "${args[1]}" == "restart" ]]; then
         isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
