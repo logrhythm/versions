@@ -46,11 +46,11 @@ local_versions_realpath=""
 local_versions_mount_path="/lrctl/versions/versions.yml"
 
 # URLs to check
-prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/LRS/latest.yml"
+prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/new_lrs/latest.yml"
 container_registry_url="https://gcr.io"
 
 # prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/lrctl"
-prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/LRS/lrctl"
+prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/new_lrs/lrctl"
 
 # Track the files that should be cleaned up. We add one file just to avoid the
 # array being empty.
