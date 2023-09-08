@@ -678,8 +678,8 @@ runLrctlSVC() {
     if [[ ${args[0]}" != "lrctl" ]]; then
        echo "${args[2]}"
        echo "${args[3]}"
-       args[0]="${args[2]}"
-       args[1]="${args[3]}"
+       # args[0]="${args[2]}"
+       # args[1]="${args[3]}"
     fi
     echo "${args[0]}" "service" "${args[1]}ed"
 }
