@@ -662,7 +662,7 @@ runLrctlSVC() {
       echo >&2 "Docker Run Args: ${docker_args[@]}"
     fi
     
-    docker run "${docker_args[@]}" 2> /dev/null
+    docker run "${docker_args[@]}" &> /dev/null
     
     
     if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl")  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[3]}" == "start" || "${args[1]}" == "restart" || "${args[3]}" == "restart" ) ]]; then
