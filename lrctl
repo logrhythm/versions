@@ -16,6 +16,8 @@ ocdb_repo="gcr.io/lrcollection"
 ocdb_version="6.0.2"
 ocadmin_repo="gcr.io/lrcollection"
 ocadmin_version="6.0.12"
+hostnameSvc="$(hostname)"
+isLongRunningDetached="false"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
@@ -44,11 +46,11 @@ local_versions_realpath=""
 local_versions_mount_path="/lrctl/versions/versions.yml"
 
 # URLs to check
-prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/latest.yml"
+prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/new_lrs/latest.yml"
 container_registry_url="https://gcr.io"
 
 # prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/lrctl"
-prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/lrctl"
+prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/new_lrs/lrctl"
 
 # Track the files that should be cleaned up. We add one file just to avoid the
 # array being empty.
@@ -582,6 +584,84 @@ runLrctl() {
   fi
 
   docker run "${docker_args[@]}"
+}
+
+# Run the LRCTL Long Running container
+runLrctlSVC() {
+    echo "inadie here"
+    if [[ ("${args[@]}" == *"lrctl_svc"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
+       echo "inadie here 2"
+       if [[ "${args[1]}" == "restart" ]]; then
+          isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
+          if [[ -n "$isLongRunningContainer"  ]]; then
+             docker rm -f lrctl_svc
+          fi
+        fi 
+      echo "inadie here 3"  
+      isLongRunningDetached="true"
+      docker_args=(-d --name lrctl_svc --env hostName=${hostnameSvc} --env script_version=${lrctl_version} --env ipv=$(hostname -I | cut -f1 -d' ') -v lrctl_logs_svc:/app/cmd/beats/lrctl/logs)
+    else
+      docker_args=(-i --rm --name lrctl --env script_version=${lrctl_version})
+    fi
+
+    for vol_mount in "${lrctl_volume_mounts[@]}"; do
+      docker_args+=(-v "${vol_mount}")
+    done
+
+    if [[ "$isLongRunningDetached" != "true" ]]; then
+      if [[ -n "${local_versions_realpath}" ]]; then
+        local mount_dir=$(dirname "${local_versions_mount_path}")
+        docker_args+=(-v "${local_versions_volume}:${mount_dir}")
+      fi
+    fi
+
+    if [[ -t 0 ]]; then
+      docker_args+=(-t)
+    fi
+
+    # Add the image and the args that were passed to this function
+    docker_args+=("${lrctl_image}" "$@")
+    if [[ "$http_proxy" != "" ]]; then
+      echo "Using proxy setting: http_proxy=${http_proxy}"
+      docker_args+=("--env" "http_proxy=${http_proxy}")
+    fi
+    if [[ "$https_proxy" != "" ]]; then
+      echo "Using proxy setting: https_proxy=${https_proxy}"
+      docker_args+=("--env" "https_proxy=${https_proxy}")
+    fi
+
+    setupLocalMount
+
+    if [[ "${lrctl_debug}" -gt 0 ]]; then
+      echo >&2 "Docker Run Args: ${docker_args[@]}"
+    fi
+    
+    if [[ "$isLongRunningDetached" == "true" ]]; then    
+      docker run "${docker_args[@]}" 1> /dev/null
+    else
+      docker run "${docker_args[@]}" 
+    fi
+    
+    if [[ ("${args[@]}" == *"lrctl_svc"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then      
+        isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
+        if [[ -z "$isLongRunningContainer" ]]; then
+           runLrctlSVC "${args[@]}"
+        fi      
+    fi
+    printMsg "${args[@]}"
+}
+
+printMsg(){
+  
+  if [[ ("${args[@]}" == *"lrctl_svc"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
+    if [[ ("${args[@]}" == *"restart"*) ]];
+    then
+        echo "lrctl service restarted"
+        return
+    fi
+    echo "lrctl service started"
+  fi
+  
 }
 
 processVersionsInfo() {
@@ -1248,7 +1328,17 @@ case "${first_non_flag_arg:-}" in
             esac
         fi 
       else
-        runLrctl "${args[@]}" 
+        if [[ "${args[@]}" == *"lrctl_svc"* ]]; then
+            echo "hello lrctl_svc"
+            runLrctlSVC "${args[@]}" 
+        else
+          if [[ "${args[@]}" == *"lrctl"* ]]; then
+              echo "unknown command lrctl"
+          else
+              echo "hello lrctl"
+              runLrctl "${args[@]}"
+          fi
+        fi 
     fi
     ;;
 esac
