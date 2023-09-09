@@ -1328,16 +1328,12 @@ case "${first_non_flag_arg:-}" in
             esac
         fi 
       else
-        if [[ "${args[@]}" == *"lrctl_svc"* ]]; then
+        if [[ "${args[@]}" == *"lrctl"* ]]; then
             echo "hello lrctl_svc"
             runLrctlSVC "${args[@]}" 
         else
-          if [[ "${args[@]}" == *"lrctl"* ]]; then
-              echo "unknown command lrctl"
-          else
-              echo "hello lrctl"
-              runLrctl "${args[@]}"
-          fi
+            echo "hello lrctl"
+            runLrctl "${args[@]}" 
         fi 
     fi
     ;;
