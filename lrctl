@@ -551,65 +551,39 @@ pullLrctlImage() {
 
 # Run the LRCTL container
 runLrctl() {
-    
-    if [[ "${args[0]}" == "lrctl" && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[1]}" == "restart") ]]; then
+  docker_args=(-i --rm --name lrctl --env script_version=${lrctl_version})
 
-      if [[ "${args[1]}" == "restart" ]]; then
-        isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
-        if [[ -n "$isLongRunningContainer"  ]]; then
-            docker rm -f lrctl_svc
-	    isLongRunningDetached="true"
-        fi
-      fi 
-      isLongRunningDetached="true"
-      docker_args=(-d --name lrctl_svc --env hostName=${hostnameSvc} --env script_version=${lrctl_version} --env ipv=$(hostname -I | cut -f1 -d' ') -v lrctl_logs_svc:/app/cmd/beats/lrctl/logs)
-    else
-      docker_args=(-i --rm --name lrctl --env script_version=${lrctl_version})
-    fi
+  for vol_mount in "${lrctl_volume_mounts[@]}"; do
+    docker_args+=(-v "${vol_mount}")
+  done
 
-    for vol_mount in "${lrctl_volume_mounts[@]}"; do
-      docker_args+=(-v "${vol_mount}")
-    done
+  if [[ -n "${local_versions_realpath}" ]]; then
+    local mount_dir=$(dirname "${local_versions_mount_path}")
+    docker_args+=(-v "${local_versions_volume}:${mount_dir}")
+  fi
 
-    if [[ "$isLongRunningDetached" != "true" ]]; then
-      if [[ -n "${local_versions_realpath}" ]]; then
-        local mount_dir=$(dirname "${local_versions_mount_path}")
-        docker_args+=(-v "${local_versions_volume}:${mount_dir}")
-      fi
-    fi
+  if [[ -t 0 ]]; then
+    docker_args+=(-t)
+  fi
 
-    if [[ -t 0 ]]; then
-      docker_args+=(-t)
-    fi
+  # Add the image and the args that were passed to this function
+  docker_args+=("${lrctl_image}" "$@")
+  if [[ "$http_proxy" != "" ]]; then
+    echo "Using proxy setting: http_proxy=${http_proxy}"
+    docker_args+=("--env" "http_proxy=${http_proxy}")
+  fi
+  if [[ "$https_proxy" != "" ]]; then
+    echo "Using proxy setting: https_proxy=${https_proxy}"
+    docker_args+=("--env" "https_proxy=${https_proxy}")
+  fi
 
-    # Add the image and the args that were passed to this function
-    docker_args+=("${lrctl_image}" "$@")
-    if [[ "$http_proxy" != "" ]]; then
-      echo "Using proxy setting: http_proxy=${http_proxy}"
-      docker_args+=("--env" "http_proxy=${http_proxy}")
-    fi
-    if [[ "$https_proxy" != "" ]]; then
-      echo "Using proxy setting: https_proxy=${https_proxy}"
-      docker_args+=("--env" "https_proxy=${https_proxy}")
-    fi
+  setupLocalMount
 
-    setupLocalMount
+  if [[ "${lrctl_debug}" -gt 0 ]]; then
+    echo >&2 "Docker Run Args: ${docker_args[@]}"
+  fi
 
-    if [[ "${lrctl_debug}" -gt 0 ]]; then
-      echo >&2 "Docker Run Args: ${docker_args[@]}"
-    fi
-    
-    docker run "${docker_args[@]}"
-    echo "${args[0]}" "service" "${args[1]}"
-    
-    if [[ "${args[0]}" == "lrctl" && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start") ]]; then
-      isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
-      if [[ -z "$isLongRunningContainer" ]]; then
-        #runLongRunningLrctl
-        runLrctl "${args[@]}"
-      fi
-    fi
-  
+  docker run "${docker_args[@]}"
 }
 
 # Run the LRCTL Long Running container
@@ -1353,7 +1327,15 @@ case "${first_non_flag_arg:-}" in
             esac
         fi 
       else
-        runLrctlSVC "${args[@]}" 
+        if [[ "${args[@]}" == *"lrctl_svc"* ]]; then
+            runLrctlSVC "${args[@]}" 
+        else
+          if [[ "${args[@]}" == *"lrctl"* ]]; then
+              echo "no lrctl service"
+          else
+              runLrctl "${args[@]}"
+          fi
+        if 
     fi
     ;;
 esac
