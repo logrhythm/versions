@@ -588,14 +588,16 @@ runLrctl() {
 
 # Run the LRCTL Long Running container
 runLrctlSVC() {
-
-    if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
+    echo "inadie here"
+    if [[ ("${args[@]}" == *"lrctl_svc"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
+       echo "inadie here 2"
        if [[ "${args[1]}" == "restart" ]]; then
           isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
           if [[ -n "$isLongRunningContainer"  ]]; then
              docker rm -f lrctl_svc
           fi
         fi 
+      echo "inadie here 3"  
       isLongRunningDetached="true"
       docker_args=(-d --name lrctl_svc --env hostName=${hostnameSvc} --env script_version=${lrctl_version} --env ipv=$(hostname -I | cut -f1 -d' ') -v lrctl_logs_svc:/app/cmd/beats/lrctl/logs)
     else
@@ -634,14 +636,13 @@ runLrctlSVC() {
       echo >&2 "Docker Run Args: ${docker_args[@]}"
     fi
     
-    if [[ "$isLongRunningDetached" == "true" ]]; then
-      docker run "${docker_args[@]}" &> /dev/null
+    if [[ "$isLongRunningDetached" == "true" ]]; then    
+      docker run "${docker_args[@]}" 1> /dev/null
     else
       docker run "${docker_args[@]}" 
     fi
     
-    
-    if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then      
+    if [[ ("${args[@]}" == *"lrctl_svc"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then      
         isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
         if [[ -z "$isLongRunningContainer" ]]; then
            runLrctlSVC "${args[@]}"
@@ -652,7 +653,7 @@ runLrctlSVC() {
 
 printMsg(){
   
-  if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
+  if [[ ("${args[@]}" == *"lrctl_svc"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
     if [[ ("${args[@]}" == *"restart"*) ]];
     then
         echo "lrctl service restarted"
@@ -1328,11 +1329,13 @@ case "${first_non_flag_arg:-}" in
         fi 
       else
         if [[ "${args[@]}" == *"lrctl_svc"* ]]; then
+            echo "hello lrctl_svc"
             runLrctlSVC "${args[@]}" 
         else
           if [[ "${args[@]}" == *"lrctl"* ]]; then
-              echo "no lrctl service"
+              echo "unknown command lrctl"
           else
+              echo "hello lrctl"
               runLrctl "${args[@]}"
           fi
         fi 
