@@ -616,7 +616,7 @@ runLrctl() {
 runLrctlSVC() {
     
     if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
-	echo "inside detached if"
+
       if [[ "${args[1]}" == "restart" ]]; then
         isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
         if [[ -n "$isLongRunningContainer"  ]]; then
@@ -666,18 +666,19 @@ runLrctlSVC() {
     
     
     if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
+      echo "lrctl" "service starting" 
       isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
       if [[ -z "$isLongRunningContainer" ]]; then
-        #runLongRunningLrctl
         runLrctlSVC "${args[@]}"
+        if [[ ("${args[0]}" != "lrctl") ]]; then
+             args[0]="${args[2]}"
+             args[1]="${args[3]}"
+        fi
+        echo "${args[0]}" "service" "${args[1]}ed"
       fi
-      echo " start detach mode"
+      
     fi
-   if [[ ("${args[0]}" != "lrctl") ]]; then
-      args[0]="${args[2]}"
-      args[1]="${args[3]}"
-   fi
-    echo "${args[0]}" "service" "${args[1]}ed"
+   
 }
 
 
