@@ -1335,7 +1335,7 @@ case "${first_non_flag_arg:-}" in
           else
               runLrctl "${args[@]}"
           fi
-        if 
+        fi 
     fi
     ;;
 esac
