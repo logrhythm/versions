@@ -662,18 +662,22 @@ runLrctlSVC() {
       echo >&2 "Docker Run Args: ${docker_args[@]}"
     fi
     
-    # docker run "${docker_args[@]}" &> /dev/null
-    docker run "${docker_args[@]}"
+    docker run "${docker_args[@]}" &> /dev/null
+    # docker run "${docker_args[@]}"
     
     
     if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
-      echo "lrctl" "service starting" 
+      
       isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
       if [[ -z "$isLongRunningContainer" ]]; then
         runLrctlSVC "${args[@]}"
         
       fi
-      echo "lrctl" "service started"
+      
+    fi
+
+    if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
+       echo "lrctl" "service started"
     fi
    
 }
