@@ -614,15 +614,14 @@ runLrctl() {
 
 # Run the LRCTL Long Running container
 runLrctlSVC() {
-    echo "inside runLrctlSVC"
+
     if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
-      if [[ "${args[1]}" == "restart" ]]; then
-        isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
-        if [[ -n "$isLongRunningContainer"  ]]; then
-            docker rm -f lrctl_svc
-	    isLongRunningDetached="true"
-        fi
-      fi 
+       if [[ "${args[1]}" == "restart" ]]; then
+          isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
+          if [[ -n "$isLongRunningContainer"  ]]; then
+             docker rm -f lrctl_svc
+          fi
+        fi 
       isLongRunningDetached="true"
       docker_args=(-d --name lrctl_svc --env hostName=${hostnameSvc} --env script_version=${lrctl_version} --env ipv=$(hostname -I | cut -f1 -d' ') -v lrctl_logs_svc:/app/cmd/beats/lrctl/logs)
     else
@@ -661,21 +660,33 @@ runLrctlSVC() {
       echo >&2 "Docker Run Args: ${docker_args[@]}"
     fi
     
-    docker run "${docker_args[@]}"
-    # docker run "${docker_args[@]}"
+    if [[ "$isLongRunningDetached" == "true" ]]; then
+      docker run "${docker_args[@]}" &> /dev/null
+    else
+      docker run "${docker_args[@]}" 
+    fi
     
     
     if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then      
-      isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
-      if [[ -z "$isLongRunningContainer" ]]; then
-        runLrctlSVC "${args[@]}"
-      fi      
+        isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
+        if [[ -z "$isLongRunningContainer" ]]; then
+           runLrctlSVC "${args[@]}"
+        fi      
     fi
-    #printMsg
+    printMsg "${args[@]}"
 }
 
 printMsg(){
-  echo "started"
+  
+  if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
+    if [[ ("${args[@]}" == *"restart"*) ]];
+    then
+        echo "lrctl service restarted"
+        return
+    fi
+    echo "lrctl service started"
+  fi
+  
 }
 
 processVersionsInfo() {
