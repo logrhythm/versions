@@ -666,22 +666,18 @@ runLrctlSVC() {
     # docker run "${docker_args[@]}"
     
     
-    if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
-      
+    if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then      
       isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
       if [[ -z "$isLongRunningContainer" ]]; then
         runLrctlSVC "${args[@]}"
-        
-      fi
-      
+      fi      
     fi
-
-    if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
-       echo "lrctl" "service started"
-    fi
-   
+    printMsg
 }
 
+printMsg(){
+  echo "started"
+}
 
 processVersionsInfo() {
   # Default to the latest local image of lrctl we have
