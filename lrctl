@@ -659,8 +659,10 @@ printMsg(){
     then
         echo "lrctl service restarted"
         return
+    else
+	echo "lrctl service started"
     fi
-    echo "lrctl service started"
+    
   fi
   
 }
