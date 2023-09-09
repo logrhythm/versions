@@ -589,7 +589,7 @@ runLrctl() {
 # Run the LRCTL Long Running container
 runLrctlSVC() {
     echo "inadie here"
-    if [[ ("${args[@]}" == *"lrctl_svc"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
+    if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
        echo "inadie here 2"
        if [[ "${args[1]}" == "restart" ]]; then
           isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
@@ -642,7 +642,7 @@ runLrctlSVC() {
       docker run "${docker_args[@]}" 
     fi
     
-    if [[ ("${args[@]}" == *"lrctl_svc"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then      
+    if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then      
         isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
         if [[ -z "$isLongRunningContainer" ]]; then
            runLrctlSVC "${args[@]}"
@@ -653,7 +653,7 @@ runLrctlSVC() {
 
 printMsg(){
   
-  if [[ ("${args[@]}" == *"lrctl_svc"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
+  if [[ ("${args[@]}" == *"lrctl"*)  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
     if [[ ("${args[@]}" == *"restart"*) ]];
     then
         echo "lrctl service restarted"
