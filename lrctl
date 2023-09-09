@@ -661,7 +661,7 @@ runLrctlSVC() {
       echo >&2 "Docker Run Args: ${docker_args[@]}"
     fi
     
-    docker run "${docker_args[@]}" &> /dev/null
+    docker run "${docker_args[@]}"
     # docker run "${docker_args[@]}"
     
     
@@ -671,7 +671,7 @@ runLrctlSVC() {
         runLrctlSVC "${args[@]}"
       fi      
     fi
-    printMsg
+    #printMsg
 }
 
 printMsg(){
