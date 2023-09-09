@@ -670,13 +670,9 @@ runLrctlSVC() {
       isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
       if [[ -z "$isLongRunningContainer" ]]; then
         runLrctlSVC "${args[@]}"
-        if [[ ("${args[0]}" != "lrctl") ]]; then
-             args[0]="${args[2]}"
-             args[1]="${args[3]}"
-        fi
-        echo "${args[0]}" "service" "${args[1]}ed"
+        
       fi
-      
+      echo "lrctl" "service started"
     fi
    
 }
