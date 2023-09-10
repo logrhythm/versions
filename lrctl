@@ -589,8 +589,8 @@ runLrctl() {
 # Run the LRCTL Long Running container
 runLrctlSVC() {
     
-    if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
-       if [[ "${args[@]}" == *"restart"* ]]; then
+    if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[3]}" == *"start"* || "${args[1]}" == "restart" || "${args[1]}" == "restart" ) ]]; then
+       if [[ ("${args[1]}" == "restart" || "${args[3]}" == "restart" )  ]]; then
           isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
           if [[ -n "$isLongRunningContainer"  ]]; then
              docker rm -f lrctl_svc
@@ -643,7 +643,7 @@ runLrctlSVC() {
       docker run "${docker_args[@]}" 
     fi
     
-    if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then      
+    if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[3]}" == *"start"* || "${args[1]}" == "restart" || "${args[1]}" == "restart" ) ]]; then      
         isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
         if [[ -z "$isLongRunningContainer" ]]; then
            runLrctlSVC "${args[@]}"
@@ -654,7 +654,7 @@ runLrctlSVC() {
 
 printMsg(){
   
-  if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"*  || "${args[@]}" == *"restart"* ) ]]; then
+  if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[3]}" == *"start"* || "${args[1]}" == "restart" || "${args[1]}" == "restart" ) ]]; then
     if [[ ("${args[@]}" == *"restart"*) ]];
     then
         echo "lrctl service restarted"
