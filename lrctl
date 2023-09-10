@@ -593,7 +593,7 @@ runLrctlSVC() {
        if [[ ("${args[1]}" == "restart" || "${args[3]}" == "restart" )  ]]; then
           isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
           if [[ -n "$isLongRunningContainer"  ]]; then
-             docker rm -f lrctl_svc
+             docker rm -f lrctl_svc 1> /dev/null
           else
              "no container start"
              return
@@ -1332,10 +1332,8 @@ case "${first_non_flag_arg:-}" in
         fi 
       else
         if [[ "${args[@]}" == *"lrctl"* ]]; then
-            echo "hello lrctl_svc"
             runLrctlSVC "${args[@]}" 
         else
-            echo "hello lrctl"
             runLrctl "${args[@]}" 
         fi 
     fi
