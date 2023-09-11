@@ -640,7 +640,7 @@ runLrctlSVC() {
            runLrctlSVC "${args[@]}"
         fi      
     fi
-    printMsg "${args[@]}"
+  printMsg "${args[@]}"
 }
 
 printMsg(){
@@ -651,9 +651,8 @@ printMsg(){
         echo "lrctl service restarted"
         return
     else
-	echo "lrctl service started"
+	      echo "lrctl service started"
     fi
-    
   fi
   
 }
@@ -668,6 +667,7 @@ isLrctlRunondetacheMode(){
              docker rm -f lrctl_svc 1> /dev/null
           else
              echo "no lrctl container started"
+             isLongRunningDetached="false"
              return
           fi
         fi 
@@ -681,6 +681,7 @@ isLrctlRunondetacheMode(){
              docker rm -f lrctl_svc 1> /dev/null
           else
              echo "no lrctl container started"
+             isLongRunningDetached="false"
              return
           fi
         fi
