@@ -661,6 +661,7 @@ isLrctlRunondetacheMode(){
 
   if [[ ${#args[@]} == 4 ]]; then
       if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[3]}" == "start" || "${args[1]}" == "restart" || "${args[3]}" == "restart" ) ]]; then
+        isLongRunningDetached="true"
         if [[ ("${args[1]}" == "restart" || "${args[3]}" == "restart" )  ]]; then
           isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
           if [[ -n "$isLongRunningContainer"  ]]; then
@@ -668,13 +669,14 @@ isLrctlRunondetacheMode(){
           else
              echo "no lrctl container started"
              isLongRunningDetached="false"
-             return
+             #return
           fi
         fi 
-        isLongRunningDetached="true"
+        
       fi
   else
       if [[ ("${args[0]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[1]}" == "restart" ) ]]; then
+          isLongRunningDetached="true"
           if [[ ("${args[1]}" == "restart" )  ]]; then
           isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
           if [[ -n "$isLongRunningContainer"  ]]; then
@@ -682,10 +684,10 @@ isLrctlRunondetacheMode(){
           else
              echo "no lrctl container started"
              isLongRunningDetached="false"
-             return
+             #return
           fi
         fi
-        isLongRunningDetached="true"
+        #isLongRunningDetached="true"
       fi
   fi
 
