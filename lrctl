@@ -32,7 +32,7 @@ lrctl_config_volume="lrctl_state_info"
 # LRCTL config .yml
 lrctl_config_yml="auto_update.yml"
 # Starting value for global auto_update
-global_autoupdate_enabled="true"
+global_autoupdate_enabled="false"
 
 # Output file path, if provided
 output_file_path=""
@@ -588,18 +588,8 @@ runLrctl() {
 
 # Run the LRCTL Long Running container
 runLrctlSVC() {
-    
-    if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[3]}" == *"start"* || "${args[1]}" == "restart" || "${args[1]}" == "restart" ) ]]; then
-       if [[ ("${args[1]}" == "restart" || "${args[3]}" == "restart" )  ]]; then
-          isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
-          if [[ -n "$isLongRunningContainer"  ]]; then
-             docker rm -f lrctl_svc 1> /dev/null
-          else
-             "no container start"
-             return
-          fi
-        fi 
-      isLongRunningDetached="true"
+    isLrctlRunondetacheMode "${args[@]}"
+    if [[ "$isLongRunningDetached" == "true" ]]; then
       docker_args=(-d --name lrctl_svc --env hostName=${hostnameSvc} --env script_version=${lrctl_version} --env ipv=$(hostname -I | cut -f1 -d' ') -v lrctl_logs_svc:/app/cmd/beats/lrctl/logs)
     else
       docker_args=(-i --rm --name lrctl --env script_version=${lrctl_version})
@@ -643,7 +633,8 @@ runLrctlSVC() {
       docker run "${docker_args[@]}" 
     fi
     
-    if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[3]}" == *"start"* || "${args[1]}" == "restart" || "${args[1]}" == "restart" ) ]]; then      
+    isLrctlRunondetacheMode "${args[@]}"
+    if [[ "$isLongRunningDetached" == "true" ]]; then
         isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
         if [[ -z "$isLongRunningContainer" ]]; then
            runLrctlSVC "${args[@]}"
@@ -654,7 +645,7 @@ runLrctlSVC() {
 
 printMsg(){
   
-  if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[3]}" == *"start"* || "${args[1]}" == "restart" || "${args[1]}" == "restart" ) ]]; then
+  if [[ ("${args[@]}" == *"lrctl"* )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"* || "${args[@]}" == *"restart"* ) ]]; then
     if [[ ("${args[@]}" == *"restart"*) ]];
     then
         echo "lrctl service restarted"
@@ -665,6 +656,38 @@ printMsg(){
     
   fi
   
+}
+
+isLrctlRunondetacheMode(){
+
+  if [[ ${#args[@]} == 4 ]]; then
+      if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[3]}" == "start" || "${args[1]}" == "restart" || "${args[3]}" == "restart" ) ]]; then
+        if [[ ("${args[1]}" == "restart" || "${args[3]}" == "restart" )  ]]; then
+          isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
+          if [[ -n "$isLongRunningContainer"  ]]; then
+             docker rm -f lrctl_svc 1> /dev/null
+          else
+             echo "no lrctl container started"
+             return
+          fi
+        fi 
+        isLongRunningDetached="true"
+      fi
+  else
+      if [[ ("${args[0]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[1]}" == "restart" ) ]]; then
+          if [[ ("${args[1]}" == "restart" )  ]]; then
+          isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
+          if [[ -n "$isLongRunningContainer"  ]]; then
+             docker rm -f lrctl_svc 1> /dev/null
+          else
+             echo "no lrctl container started"
+             return
+          fi
+        fi
+        isLongRunningDetached="true"
+      fi
+  fi
+
 }
 
 processVersionsInfo() {
