@@ -16,7 +16,7 @@ ocdb_repo="gcr.io/lrcollection"
 ocdb_version="6.0.2"
 ocadmin_repo="gcr.io/lrcollection"
 ocadmin_version="6.0.12"
-hostnameSvc="$(hostname)"
+hostnameSvc="$(hostname --fqdn)"
 isLongRunningDetached="false"
 
 lrctl_volume_mounts=()
