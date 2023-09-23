@@ -32,7 +32,7 @@ lrctl_config_volume="lrctl_state_info"
 # LRCTL config .yml
 lrctl_config_yml="auto_update.yml"
 # Starting value for global auto_update
-global_autoupdate_enabled="false"
+global_autoupdate_enabled="true"
 
 # Output file path, if provided
 output_file_path=""
