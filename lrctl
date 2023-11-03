@@ -1009,7 +1009,7 @@ processStartOC_DB(){
           echo "oc-db container started"
         fi
       fi
-  fi
+    fi
   else
     echo "### Create \`oc-db\` Volume..."
     docker volume create oc-db
