@@ -708,7 +708,7 @@ processVersionsInfo() {
 
 ocdbContainerStart(){
   echo "### Create/Start OC-DB (\`oc-db\`) container for PostgreSQL using \`oc-db\` Volume..."
-  docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+  docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach --restart always ${ocdb_repo}/oc-db:${ocdb_version} 
   
   sleep 5
   echo "done"
@@ -1004,17 +1004,17 @@ processStartOC_DB(){
           echo "oc-db container started"
         else
           echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
-          docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach --restart --restart always ${ocdb_repo}/oc-db:${ocdb_version}
+          docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach --restart always ${ocdb_repo}/oc-db:${ocdb_version}
           sleep 10
           echo "oc-db container started"
         fi
       fi
-		fi
+  fi
   else
     echo "### Create \`oc-db\` Volume..."
     docker volume create oc-db
     echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
-		docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+    docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach --restart always ${ocdb_repo}/oc-db:${ocdb_version}
     sleep 10
     echo "oc-db container started"
   fi
