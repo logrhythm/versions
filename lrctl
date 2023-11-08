@@ -13,9 +13,9 @@ lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/lrcollection"
-ocdb_version="6.0.2"
+ocdb_version="6.0.3"
 ocadmin_repo="gcr.io/lrcollection"
-ocadmin_version="6.0.12"
+ocadmin_version="6.0.13"
 hostnameSvc="$(hostname --all-fqdns | cut -f1 -d' ')"
 isLongRunningDetached="false"
 
