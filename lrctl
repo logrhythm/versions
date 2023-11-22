@@ -1040,7 +1040,7 @@ processRestartOC_DB(){
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
       echo "oc-db container restart starting..."
--     ocDbImage="${ocdb_repo}/oc-db:${ocdb_version}"
+      ocDbImage="${ocdb_repo}/oc-db:${ocdb_version}"
       if [[ -n "$(checkForImage ${ocDbImage})" ]];
       then
         docker restart oc-db
