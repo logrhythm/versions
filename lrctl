@@ -13,9 +13,9 @@ lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/lrcollection"
-ocdb_version="6.0.2"
+ocdb_version="6.0.3"
 ocadmin_repo="gcr.io/lrcollection"
-ocadmin_version="6.0.13"
+ocadmin_version="6.0.14"
 hostnameSvc="$(hostname --all-fqdns | cut -f1 -d' ')"
 isLongRunningDetached="false"
 
@@ -1040,11 +1040,17 @@ processRestartOC_DB(){
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
       echo "oc-db container restart starting..."
-      #docker stop oc-db
-      docker restart oc-db
-      #cleanOcDbContainer
-      #cleanOcDbImages
-      #processStartOC_DB
+      ocDbImage="${ocdb_repo}/oc-db:${ocdb_version}"
+      if [[ -n "$(checkForImage ${ocDbImage})" ]];
+      then
+        docker restart oc-db
+      else
+        docker stop oc-db
+        #docker restart oc-db
+        cleanOcDbContainer
+        cleanOcDbImages
+        processStartOC_DB
+      fi
       echo "oc-db container restarted"
   else
       echo "no oc-db container started"
