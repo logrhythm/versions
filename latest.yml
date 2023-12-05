@@ -1,13 +1,13 @@
 services:
   lrctl:
     image: gcr.io/lrcollection/lrctl
-    version: 6.5.14
+    version: 6.5.15
   open-collector:
     image: gcr.io/lrcollection/opencollector
-    version: 5.6.19
+    version: 5.6.20
   metrics:
     image: gcr.io/lrcollection/metrics
-    version: 6.0.4
+    version: 6.0.5
   eventhubbeat:
     image: gcr.io/lrcollection/beats/eventhubbeat
     version: 6.0.8
@@ -67,7 +67,7 @@ services:
     version: 6.0.0
   salesforcebeat:
     image: gcr.io/lrcollection/beats/salesforcebeat
-    version: 6.0.0
+    version: 6.0.1
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
