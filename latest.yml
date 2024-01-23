@@ -15,8 +15,8 @@ services:
     image: gcr.io/lrcollection/beats/gsbeat
     version: 6.0.4
   s3beat:
-    image: gcr.io/lrcollection/beats/s3beat
-    version: 6.2.2
+    image: gcr.io/datacollector-215718/beats/s3beat
+    version: 6.2.1-s3stopissue-dirty
   pubsubbeat:
     image: gcr.io/lrcollection/beats/pubsubbeat
     version: 6.0.3
