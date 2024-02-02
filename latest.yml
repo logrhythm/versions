@@ -51,8 +51,8 @@ services:
     image: gcr.io/lrcollection/beats/proofpointbeat
     version: 6.0.3
   genericbeat:
-    image: gcr.io/lrcollection/beats/genericbeat
-    version: 6.1.2
+    image: gcr.io/datacollector-215718/beats/genericbeat
+    version: 37411fix
   symantecwssbeat:
     image: gcr.io/lrcollection/beats/symantecwssbeat
     version: 6.0.3
