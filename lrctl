@@ -8,14 +8,16 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="6.5.11"
+lrctl_version="6.5.16"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/lrcollection"
-ocdb_version="6.0.2"
+ocdb_version="6.0.3"
 ocadmin_repo="gcr.io/lrcollection"
-ocadmin_version="6.0.11"
+ocadmin_version="6.0.14"
+hostnameSvc="$(hostname --all-fqdns | cut -f1 -d' ')"
+isLongRunningDetached="false"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
@@ -47,8 +49,8 @@ local_versions_mount_path="/lrctl/versions/versions.yml"
 prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/latest.yml"
 container_registry_url="https://gcr.io"
 
-# prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/lrctl"
 prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/lrctl"
+
 
 # Track the files that should be cleaned up. We add one file just to avoid the
 # array being empty.
@@ -259,9 +261,10 @@ ensureUserIsInDockerGroup() {
 
 # check if docker is installed on machine
 installDockerCE() {
-    # Check if the distribution is Oracle
-    if [[ $(get_distribution) == "ol" ]]; then
-        echo "Installing docker for Oracle Linux"
+    # Check if the distribution is Oracle or Rocky
+    lsb_dis=$(get_distribution)
+    if [[ ( "$lsb_dis" == "ol" ) || ( "$lsb_dis" == "rocky" ) ]]; then
+        echo "Installing docker.."
         dnf remove -y runc
         dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
         dnf install -y docker-ce --nobest
@@ -583,6 +586,103 @@ runLrctl() {
   docker run "${docker_args[@]}"
 }
 
+# Run the LRCTL Long Running container
+runLrctlSVC() {
+    isLrctlRunondetacheMode "${args[@]}"
+    if [[ "$isLongRunningDetached" == "true" ]]; then
+        if [[ ("${args[@]}" == *"restart"* )  ]]; then
+          isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
+          if [[ -n "$isLongRunningContainer"  ]]; then
+             docker rm -f lrctl_svc 1> /dev/null
+        else
+             echo "no lrctl container started"
+             isLongRunningDetached="false"
+             return
+          fi
+        fi 
+      docker_args=(-d --name lrctl_svc --env hostName=${hostnameSvc} --env script_version=${lrctl_version} --env ipv=$(hostname -I | cut -f1 -d' ') --restart unless-stopped -v lrctl_logs_svc:/app/cmd/beats/lrctl/logs)
+    else
+      docker_args=(-i --rm --name lrctl --env script_version=${lrctl_version})
+    fi
+
+    for vol_mount in "${lrctl_volume_mounts[@]}"; do
+      docker_args+=(-v "${vol_mount}")
+    done
+
+    if [[ "$isLongRunningDetached" != "true" ]]; then
+      if [[ -n "${local_versions_realpath}" ]]; then
+        local mount_dir=$(dirname "${local_versions_mount_path}")
+        docker_args+=(-v "${local_versions_volume}:${mount_dir}")
+      fi
+    fi
+
+    if [[ -t 0 ]]; then
+      docker_args+=(-t)
+    fi
+
+    # Add the image and the args that were passed to this function
+    docker_args+=("${lrctl_image}" "$@")
+    if [[ "$http_proxy" != "" ]]; then
+      echo "Using proxy setting: http_proxy=${http_proxy}"
+      docker_args+=("--env" "http_proxy=${http_proxy}")
+    fi
+    if [[ "$https_proxy" != "" ]]; then
+      echo "Using proxy setting: https_proxy=${https_proxy}"
+      docker_args+=("--env" "https_proxy=${https_proxy}")
+    fi
+
+    setupLocalMount
+
+    if [[ "${lrctl_debug}" -gt 0 ]]; then
+      echo >&2 "Docker Run Args: ${docker_args[@]}"
+    fi
+    
+    if [[ "$isLongRunningDetached" == "true" ]]; then    
+      docker run "${docker_args[@]}" 1> /dev/null
+      printMsg "${args[@]}"
+    else
+      docker run "${docker_args[@]}" 
+    fi
+    
+    isLrctlRunondetacheMode "${args[@]}"
+    if [[ "$isLongRunningDetached" == "true" ]]; then
+        isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
+        if [[ -z "$isLongRunningContainer" ]]; then
+           runLrctlSVC "${args[@]}"
+        fi      
+    fi
+  #printMsg "${args[@]}"
+}
+
+printMsg(){
+  
+  if [[ ("${args[@]}" == *"lrctl"* )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"* || "${args[@]}" == *"restart"* ) ]]; then
+    if [[ ("${args[@]}" == *"restart"*) ]];
+    then
+        echo "lrctl service restarted"
+        return
+    else
+	      echo "lrctl service started"
+    fi
+  fi
+  
+}
+
+isLrctlRunondetacheMode(){
+
+  if [[ ${#args[@]} == 4 ]]; then
+      if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[3]}" == "start" || "${args[1]}" == "restart" || "${args[3]}" == "restart" ) ]]; then
+        isLongRunningDetached="true"
+      fi
+  else
+      if [[ ("${args[0]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[1]}" == "restart" ) ]]; then
+          isLongRunningDetached="true"
+        #isLongRunningDetached="true"
+      fi
+  fi
+
+}
+
 processVersionsInfo() {
   # Default to the latest local image of lrctl we have
   services_lrctl_image="gcr.io/lrcollection/lrctl"
@@ -609,7 +709,7 @@ processVersionsInfo() {
 
 ocdbContainerStart(){
   echo "### Create/Start OC-DB (\`oc-db\`) container for PostgreSQL using \`oc-db\` Volume..."
-  docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+  docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach --restart always ${ocdb_repo}/oc-db:${ocdb_version} 
   
   sleep 5
   echo "done"
@@ -905,17 +1005,17 @@ processStartOC_DB(){
           echo "oc-db container started"
         else
           echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
-          docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach --restart unless-stopped ${ocdb_repo}/oc-db:${ocdb_version}
+          docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach --restart always ${ocdb_repo}/oc-db:${ocdb_version}
           sleep 10
           echo "oc-db container started"
         fi
       fi
-		fi
+    fi
   else
     echo "### Create \`oc-db\` Volume..."
     docker volume create oc-db
     echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
-		docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+    docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach --restart always ${ocdb_repo}/oc-db:${ocdb_version}
     sleep 10
     echo "oc-db container started"
   fi
@@ -940,11 +1040,17 @@ processRestartOC_DB(){
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
       echo "oc-db container restart starting..."
-      #docker stop oc-db
-      docker restart oc-db
-      #cleanOcDbContainer
-      #cleanOcDbImages
-      #processStartOC_DB
+      ocDbImage="${ocdb_repo}/oc-db:${ocdb_version}"
+      if [[ -n "$(checkForImage ${ocDbImage})" ]];
+      then
+        docker restart oc-db
+      else
+        docker stop oc-db
+        #docker restart oc-db
+        cleanOcDbContainer
+        cleanOcDbImages
+        processStartOC_DB
+      fi
       echo "oc-db container restarted"
   else
       echo "no oc-db container started"
@@ -1039,7 +1145,7 @@ processStartOC_ADMIN(){
           createOcAdminConfigVolume
           # Kick off OC Admin
           echo "### RUN \`oc-admin\` CONTAINER..."
-          docker run --detach --restart unless-stopped --publish 8400:8400/tcp --network logrhythm --volume oc-admin_config:/app/config --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
+          docker run --detach --restart always --publish 8400:8400/tcp --network logrhythm --volume oc-admin_config:/app/config --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
         fi
       fi
       sleep 10
@@ -1247,7 +1353,11 @@ case "${first_non_flag_arg:-}" in
             esac
         fi 
       else
-        runLrctl "${args[@]}" 
+        if [[ "${args[@]}" == *"lrctl"* ]]; then
+            runLrctlSVC "${args[@]}" 
+        else
+            runLrctl "${args[@]}" 
+        fi 
     fi
     ;;
 esac

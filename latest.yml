@@ -1,16 +1,16 @@
 services:
   lrctl:
     image: gcr.io/lrcollection/lrctl
-    version: 6.5.11
+    version: 6.5.16
   open-collector:
     image: gcr.io/lrcollection/opencollector
-    version: 5.6.17
+    version: 5.6.20
   metrics:
     image: gcr.io/lrcollection/metrics
-    version: 6.0.4
+    version: 6.0.5
   eventhubbeat:
     image: gcr.io/lrcollection/beats/eventhubbeat
-    version: 6.0.8
+    version: 6.0.9
   gsbeat:
     image: gcr.io/lrcollection/beats/gsbeat
     version: 6.0.4
@@ -31,7 +31,7 @@ services:
     version: 6.1.6
   webhookbeat:
     image: gcr.io/lrcollection/beats/webhookbeat
-    version: 6.1.6
+    version: 6.1.7
   duobeat:
     image: gcr.io/lrcollection/beats/duobeat
     version: 6.0.5
@@ -52,7 +52,7 @@ services:
     version: 6.0.3
   genericbeat:
     image: gcr.io/lrcollection/beats/genericbeat
-    version: 6.1.2
+    version: 6.2.0
   symantecwssbeat:
     image: gcr.io/lrcollection/beats/symantecwssbeat
     version: 6.0.3
@@ -65,6 +65,9 @@ services:
   darktracebeat:
     image: gcr.io/lrcollection/beats/darktracebeat
     version: 6.0.0
+  salesforcebeat:
+    image: gcr.io/lrcollection/beats/salesforcebeat
+    version: 6.0.2
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
