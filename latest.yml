@@ -25,7 +25,7 @@ services:
     version: 6.0.3
   gmtbeat:
     image: gcr.io/datacollector-215718/beats/gmtbeat
-    version: 6.0.3-ENG-24578-dirty
+    version: panicfix
   ciscoampbeat:
     image: gcr.io/lrcollection/beats/ciscoampbeat
     version: 6.1.6
