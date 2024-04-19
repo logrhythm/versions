@@ -9,8 +9,8 @@ services:
     image: gcr.io/lrcollection/metrics
     version: 6.0.5
   eventhubbeat:
-    image: gcr.io/lrcollection/beats/eventhubbeat
-    version: 6.0.9
+    image: gcr.io/datacollector-215718/beats/eventhubbeat
+    version: dev_binary
   gsbeat:
     image: gcr.io/lrcollection/beats/gsbeat
     version: 6.0.4
