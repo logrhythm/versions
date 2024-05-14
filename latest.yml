@@ -57,8 +57,8 @@ services:
     image: gcr.io/lrcollection/beats/symantecwssbeat
     version: 6.0.3
   msgraphbeat:
-    image: gcr.io/lrcollection/beats/msgraphbeat
-    version: 6.0.5
+    image: gcr.io/datacollector-215718/beats/msgraphbeat
+    version: dev_binary
   prismacloudbeat:
     image: gcr.io/lrcollection/beats/prismacloudbeat
     version: 6.0.1
