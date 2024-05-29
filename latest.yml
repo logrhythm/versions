@@ -10,7 +10,7 @@ services:
     version: 6.0.5
   eventhubbeat:
     image: gcr.io/lrcollection/beats/eventhubbeat
-    version: 6.0.9
+    version: 6.0.10
   gsbeat:
     image: gcr.io/lrcollection/beats/gsbeat
     version: 6.0.4
@@ -40,7 +40,7 @@ services:
     version: 6.0.7
   oktabeat:
     image: gcr.io/lrcollection/beats/oktabeat
-    version: 6.0.4
+    version: 6.0.5
   kafkabeat:
     image: gcr.io/lrcollection/beats/kafkabeat
     version: 6.0.6
