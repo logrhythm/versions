@@ -25,7 +25,7 @@ services:
     version: 6.0.3
   gmtbeat:
     image: gcr.io/lrcollection/beats/gmtbeat
-    version: 6.0.3
+    version: 6.0.4
   ciscoampbeat:
     image: gcr.io/lrcollection/beats/ciscoampbeat
     version: 6.1.6
