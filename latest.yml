@@ -60,8 +60,8 @@ services:
     image: gcr.io/datacollector-215718/beats/msgraphbeat
     version: dev_binary
   prismacloudbeat:
-    image: gcr.io/lrcollection/beats/prismacloudbeat
-    version: 6.0.1
+    image: gcr.io/datacollector-215718/beats/prismacloudbeat
+    version: dev_binary
   darktracebeat:
     image: gcr.io/lrcollection/beats/darktracebeat
     version: 6.0.0
