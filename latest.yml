@@ -1,7 +1,7 @@
 services:
   lrctl:
-    image: gcr.io/lrcollection/lrctl
-    version: 6.5.16
+    image: gcr.io/datacollector-215718/lrctl
+    version: dev_binary1
   open-collector:
     image: gcr.io/datacollector-215718/opencollector
     version: 5.6.17:latest
@@ -58,7 +58,7 @@ services:
     version: 6.0.3
   msgraphbeat:
     image: gcr.io/datacollector-215718/beats/msgraphbeat
-    version: dev_binary
+    version: dev_binary2
   prismacloudbeat:
     image: gcr.io/datacollector-215718/beats/prismacloudbeat
     version: dev_binary
