@@ -24,8 +24,8 @@ services:
     image: gcr.io/lrcollection/beats/sophoscentralbeat
     version: 6.0.3
   gmtbeat:
-    image: gcr.io/lrcollection/beats/gmtbeat
-    version: 6.0.4
+    image: gcr.io/datacollector-215718/beats/gmtbeat
+    version: dev_binary1
   ciscoampbeat:
     image: gcr.io/lrcollection/beats/ciscoampbeat
     version: 6.1.6
