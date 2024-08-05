@@ -37,7 +37,7 @@ services:
     version: 6.0.5
   carbonblackcloudbeat:
     image: gcr.io/lrcollection/beats/carbonblackcloudbeat
-    version: 6.0.7
+    version: 6.0.8
   oktabeat:
     image: gcr.io/lrcollection/beats/oktabeat
     version: 6.0.5
@@ -61,7 +61,7 @@ services:
     version: 6.0.6
   prismacloudbeat:
     image: gcr.io/lrcollection/beats/prismacloudbeat
-    version: 6.0.1
+    version: 6.0.2
   darktracebeat:
     image: gcr.io/lrcollection/beats/darktracebeat
     version: 6.0.0
