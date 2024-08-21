@@ -10,7 +10,7 @@ services:
     version: 6.0.5
   eventhubbeat:
     image: gcr.io/datacollector-215718/beats/eventhubbeat
-    version: dev_binary
+    version: dev_binary2
   gsbeat:
     image: gcr.io/lrcollection/beats/gsbeat
     version: 6.0.4
