@@ -7,7 +7,7 @@ services:
     version: 5.6.20
   metrics:
     image: gcr.io/lrcollection/metrics
-    version: 6.0.6
+    version: 6.0.7
   eventhubbeat:
     image: gcr.io/lrcollection/beats/eventhubbeat
     version: 6.0.10
@@ -25,7 +25,7 @@ services:
     version: 6.0.3
   gmtbeat:
     image: gcr.io/lrcollection/beats/gmtbeat
-    version: 6.0.4
+    version: 6.0.5
   ciscoampbeat:
     image: gcr.io/lrcollection/beats/ciscoampbeat
     version: 6.1.6
