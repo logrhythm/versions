@@ -58,7 +58,7 @@ services:
     version: 6.0.3
   msgraphbeat:
     image: gcr.io/datacollector-215718/beats/msgraphbeat
-    version: dev_binary2
+    version: ENG-61623_devbinary
   prismacloudbeat:
     image: gcr.io/datacollector-215718/beats/prismacloudbeat
     version: dev_binary
