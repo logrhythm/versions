@@ -1,7 +1,7 @@
 services:
   lrctl:
     image: gcr.io/lrcollection/lrctl
-    version: 6.5.17
+    version: 6.5.18
   open-collector:
     image: gcr.io/lrcollection/opencollector
     version: 5.6.20
@@ -25,7 +25,7 @@ services:
     version: 6.0.3
   gmtbeat:
     image: gcr.io/lrcollection/beats/gmtbeat
-    version: 6.0.4
+    version: 6.0.5
   ciscoampbeat:
     image: gcr.io/lrcollection/beats/ciscoampbeat
     version: 6.1.6
@@ -43,7 +43,7 @@ services:
     version: 6.0.5
   kafkabeat:
     image: gcr.io/lrcollection/beats/kafkabeat
-    version: 6.0.6
+    version: 6.0.7
   qualysfimbeat:
     image: gcr.io/lrcollection/beats/qualysfimbeat
     version: 6.0.5
@@ -68,6 +68,9 @@ services:
   salesforcebeat:
     image: gcr.io/lrcollection/beats/salesforcebeat
     version: 6.0.2
+  exabeambeat:
+    image: gcr.io/lrcollection/beats/exabeambeat
+    version: 6.0.0
 utilities:
   lrjq:
     image: gcr.io/lrcollection/lrjq
