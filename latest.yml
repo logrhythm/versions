@@ -3,8 +3,8 @@ services:
     image: gcr.io/lrcollection/lrctl
     version: 6.5.18
   open-collector:
-    image: gcr.io/datacollector-215718/opencollector
-    version: 5.6.10-lastupdatetime_cb-dirty
+    image: gcr.io/lrcollection/opencollector
+    version: 5.6.20
   metrics:
     image: gcr.io/lrcollection/metrics
     version: 6.0.3
