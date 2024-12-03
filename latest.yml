@@ -58,7 +58,7 @@ services:
     version: 6.0.3
   msgraphbeat:
     image: gcr.io/lrcollection/beats/msgraphbeat
-    version: 6.0.7
+    version: 6.0.8
   prismacloudbeat:
     image: gcr.io/lrcollection/beats/prismacloudbeat
     version: 6.0.2
