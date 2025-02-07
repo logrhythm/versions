@@ -12,8 +12,8 @@ services:
     image: gcr.io/datacollector-215718/beats/eventhubbeat
     version: dev_binary3
   gsbeat:
-    image: gcr.io/lrcollection/beats/gsbeat
-    version: 6.0.4
+    image: gcr.io/datacollector-215718/beats/gsbeat
+    version: ENG-62828
   s3beat:
     image: gcr.io/lrcollection/beats/s3beat
     version: 6.2.2
