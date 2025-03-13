@@ -1,6 +1,6 @@
 services:
   lrctl:
-    image: gcr.io/lrcollection/lrctl
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
     version: 6.5.18
   open-collector:
     image: gcr.io/lrcollection/opencollector
@@ -57,7 +57,7 @@ services:
     image: gcr.io/lrcollection/beats/symantecwssbeat
     version: 6.0.3
   msgraphbeat:
-    image: gcr.io/lrcollection/beats/msgraphbeat
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/msgraphbeat
     version: 6.0.8
   prismacloudbeat:
     image: gcr.io/lrcollection/beats/prismacloudbeat
