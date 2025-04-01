@@ -8,13 +8,13 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="6.5.18"
+lrctl_version="6.5.19"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
-ocdb_repo="gcr.io/lrcollection"
+ocdb_repo="release.exabeam.com/docker-local/logrhythm/collection/collection-release"
 ocdb_version="6.0.3"
-ocadmin_repo="gcr.io/lrcollection"
+ocadmin_repo="release.exabeam.com/docker-local/logrhythm/collection/collection-release"
 ocadmin_version="6.0.15"
 hostnameSvc="$(hostname --all-fqdns | cut -f1 -d' ')"
 isLongRunningDetached="false"
@@ -47,7 +47,7 @@ local_versions_mount_path="/lrctl/versions/versions.yml"
 
 # URLs to check
 prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/latest.yml"
-container_registry_url="https://gcr.io"
+container_registry_url="https://release.exabeam.com"
 
 prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/lrctl"
 
@@ -685,8 +685,8 @@ isLrctlRunondetacheMode(){
 
 processVersionsInfo() {
   # Default to the latest local image of lrctl we have
-  services_lrctl_image="gcr.io/lrcollection/lrctl"
-  services_lrctl_version="$(docker image ls gcr.io/lrcollection/lrctl | awk 'NR==2{print $2}')"
+  services_lrctl_image="release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl"
+  services_lrctl_version="$(docker image ls release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl | awk 'NR==2{print $2}')"
   if [[ -n "${local_versions_realpath}" ]]; then
     # Copy the versions info into a volume
     createDockerVolume "${local_versions_volume}"
