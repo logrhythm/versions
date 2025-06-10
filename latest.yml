@@ -1,7 +1,7 @@
 services:
   lrctl:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
-    version: 6.5.20
+    image: logrhythm-docker-local.jfrog.io/logrhythm/collection/collection-dev/lrctl
+    version: 6.5.19-Release2025.07-dirty
   open-collector:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/opencollector
     version: 5.6.20
