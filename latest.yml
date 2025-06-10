@@ -74,7 +74,7 @@ services:
   sentinelonebeat:
     image: logrhythm-docker-local.jfrog.io/logrhythm/collection/collection-dev/beats/sentinelonebeat
     version: 6.0.1
-    mimecastsiembeat:
+  mimecastsiembeat:
     image: logrhythm-docker-local.jfrog.io/logrhythm/collection/collection-dev/beats/mimecastsiembeat
     version: 0.0.0-Release2025.07-dirty
 utilities:
