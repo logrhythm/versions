@@ -1,7 +1,7 @@
 services:
   lrctl:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
-    version: 6.5.20
+    version: 6.6.0
   open-collector:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/opencollector
     version: 5.6.20
@@ -22,7 +22,7 @@ services:
     version: 6.0.3
   sophoscentralbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/sophoscentralbeat
-    version: 6.0.3
+    version: 7.0.0
   gmtbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/gmtbeat
     version: 6.0.5
@@ -74,6 +74,9 @@ services:
   sentinelonebeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/sentinelonebeat
     version: 6.0.1
+  mimecastsiembeat:
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/mimecastsiembeat
+    version: 6.0.0
 utilities:
   lrjq:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrjq
