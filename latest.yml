@@ -61,7 +61,7 @@ services:
     version: 6.0.9
   prismacloudbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/prismacloudbeat
-    version: 6.0.2
+    version: 6.0.3
   darktracebeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/darktracebeat
     version: 6.0.0
