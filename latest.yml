@@ -1,6 +1,6 @@
 services:
   lrctl:
-    image: release.exabeam.com/docker-local/lrctl
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/lrctl
     version: dev_binary
   open-collector:
     image: gcr.io/datacollector-215718/opencollector
@@ -69,7 +69,7 @@ services:
     image: gcr.io/lrcollection/beats/salesforcebeat
     version: 6.0.2
   o365beat:
-    image: release.exabeam.com/docker-local/o365beat
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/o365beat
     version: dev_binary
 utilities:
   lrjq:
