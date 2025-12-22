@@ -80,6 +80,9 @@ services:
   o365beat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/o365beat
     version: 6.0.0
+  salesforceauditbeat:
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/salesforceauditbeat
+    version: 6.0.0
 utilities:
   lrjq:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrjq
