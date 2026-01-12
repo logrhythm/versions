@@ -1,7 +1,7 @@
 services:
   lrctl:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
-    version: 6.6.1
+    version: 6.6.3
   open-collector:
     image: gcr.io/datacollector-215718/opencollector
     version: 5.6.17:latest
@@ -33,8 +33,8 @@ services:
     image: gcr.io/lrcollection/beats/webhookbeat
     version: 6.1.7
   duobeat:
-    image: gcr.io/lrcollection/beats/duobeat
-    version: 6.0.5
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/duobeat
+    version: 6.0.5-ENG-84600_Duo_Api_upgrade_Bazel-dirty
   carbonblackcloudbeat:
     image: gcr.io/lrcollection/beats/carbonblackcloudbeat
     version: 6.0.7
