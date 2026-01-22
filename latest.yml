@@ -34,7 +34,7 @@ services:
     version: 6.1.7
   duobeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/duobeat
-    version: 6.0.5
+    version: 6.0.6
   carbonblackcloudbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/carbonblackcloudbeat
     version: 6.0.8
