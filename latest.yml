@@ -57,8 +57,8 @@ services:
     image: gcr.io/lrcollection/beats/symantecwssbeat
     version: 6.0.3
   msgraphbeat:
-    image: gcr.io/datacollector-215718/beats/msgraphbeat
-    version: securityV2
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/msgraphbeat
+    version: ENG-86025-GCC-gomod-8e0c17b
   prismacloudbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/prismacloudbeat
     version: 6.0.3-ENG-79404_PrismaCloud-dirty
