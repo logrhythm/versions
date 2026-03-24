@@ -1,7 +1,7 @@
 services:
   lrctl:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
-    version: 6.6.3
+    image: logrhythm-docker.jfrog.io/logrhythm/collection/collection-dev/lrctl
+    version: develop-gomod-d524e4d
   open-collector:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/opencollector
     version: 5.6.20
@@ -24,8 +24,8 @@ services:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/sophoscentralbeat
     version: 7.0.0
   gmtbeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/gmtbeat
-    version: 6.0.5
+    image: logrhythm-docker.jfrog.io/logrhythm/collection/collection-dev/beats/gmtbeat
+    version: develop-gomod-d524e4d
   ciscoampbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/ciscoampbeat
     version: 6.1.6
@@ -57,8 +57,8 @@ services:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/symantecwssbeat
     version: 6.0.3
   msgraphbeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/msgraphbeat
-    version: 6.0.9
+    image: logrhythm-docker.jfrog.io/logrhythm/collection/collection-dev/beats/msgraphbeat
+    version: develop-gomod-d524e4d
   prismacloudbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/prismacloudbeat
     version: 6.0.4
@@ -83,6 +83,9 @@ services:
   salesforceauditbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/salesforceauditbeat
     version: 6.0.0
+  tenablebeat:
+    image: logrhythm-docker.jfrog.io/logrhythm/collection/collection-dev/beats/tenablebeat
+    version: develop-gomod-d524e4d
 utilities:
   lrjq:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrjq
