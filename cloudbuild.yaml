@@ -52,5 +52,3 @@ substitutions:
   _LRVERSION_TAG: '1.0.0'
 
 timeout: 600s
-options:
-  machineType: 'E2_STANDARD_2'
