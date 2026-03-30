@@ -3,34 +3,28 @@
 #
 # Triggered on: PRs and pushes to master in logrhythm/versions
 # Purpose: Catch broken image references before a release is published.
-#
-# Requires Secret Manager secrets:
-#   - ARTIFACTORY_USER     - JFrog Artifactory username
-#   - ARTIFACTORY_PASSWORD - JFrog Artifactory password
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/$PROJECT_ID/secrets/ARTIFACTORY_USER/versions/latest
+    env: 'ARTIFACTORY_USER'
+  - versionName: projects/$PROJECT_ID/secrets/ARTIFACTORY_PASSWORD/versions/latest
+    env: 'ARTIFACTORY_PASSWORD'
 
 steps:
 
 # === AUTHENTICATE WITH JFROG ARTIFACTORY ===
-- name: 'gcr.io/cloud-builders/gcloud'
-  id: fetch_artifactory_credentials
-  entrypoint: 'bash'
-  args:
-    - '-c'
-    - |
-      echo -n "$(gcloud secrets versions access latest --secret=ARTIFACTORY_USER)" > /workspace/artifactory_user.txt
-      echo -n "$(gcloud secrets versions access latest --secret=ARTIFACTORY_PASSWORD)" > /workspace/artifactory_password.txt
-
+# Credentials are injected as env vars scoped to this step only — never written to disk.
 - name: 'gcr.io/cloud-builders/docker'
   id: authenticate_artifactory
+  secretEnv: ['ARTIFACTORY_USER', 'ARTIFACTORY_PASSWORD']
   entrypoint: 'bash'
   args:
     - '-c'
     - |
-      docker login logrhythm-docker.jfrog.io \
-        --username "$(cat /workspace/artifactory_user.txt)" \
-        --password-stdin < /workspace/artifactory_password.txt
-  waitFor:
-    - fetch_artifactory_credentials
+      echo "$$ARTIFACTORY_PASSWORD" | docker login logrhythm-docker.jfrog.io \
+        --username "$$ARTIFACTORY_USER" \
+        --password-stdin
 
 # === VALIDATE RELEASE ARTIFACTS ===
 # Cloud Build runs lrversion directly as a step — /workspace and
