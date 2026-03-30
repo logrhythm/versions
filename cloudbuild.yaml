@@ -27,18 +27,18 @@ steps:
         --password-stdin
 
 # === VALIDATE RELEASE ARTIFACTS ===
-# Cloud Build runs lrversion directly as a step — /workspace and
-# /var/run/docker.sock are mounted automatically.
-# --url "" suppresses the default GitHub URL so only the local latest.yml
-# is validated (i.e. the proposed change, not the already-published master).
-- name: 'logrhythm-docker.jfrog.io/logrhythm/collection/collection-master/lrversion:${_LRVERSION_TAG}'
+- name: 'gcr.io/cloud-builders/docker'
   id: validate_release_artifacts
+  entrypoint: 'bash'
   args:
-    - 'validate'
-    - '--file'
-    - '/workspace/latest.yml'
-    - '--url'
-    - ''
+    - '-c'
+    - |
+      docker pull logrhythm-docker.jfrog.io/logrhythm/collection/collection-master/lrversion:${_LRVERSION_TAG}
+      docker run --rm \
+        -v /workspace:/workspace \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        logrhythm-docker.jfrog.io/logrhythm/collection/collection-master/lrversion:${_LRVERSION_TAG} \
+        validate --file /workspace/latest.yml --url ""
   waitFor:
     - authenticate_artifactory
 
