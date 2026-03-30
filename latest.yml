@@ -1,6 +1,6 @@
 services:
   lrctl:
-    image:  release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
     version: 6.6.4
   open-collector:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/opencollector
@@ -85,7 +85,7 @@ services:
     version: 6.0.0
   tenablebeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/tenablebeat
-    version: 6.0.6
+    version: 6.0.0
 utilities:
   lrjq:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrjq
