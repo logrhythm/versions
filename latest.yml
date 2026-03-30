@@ -1,7 +1,7 @@
 services:
   lrctl:
-    image: logrhythm-docker.jfrog.io/logrhythm/collection/collection-dev/lrctl
-    version: develop-gomod-d524e4d
+    image:  release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
+    version: 6.6.4
   open-collector:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/opencollector
     version: 5.6.20
@@ -24,8 +24,8 @@ services:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/sophoscentralbeat
     version: 7.0.0
   gmtbeat:
-    image: logrhythm-docker.jfrog.io/logrhythm/collection/collection-dev/beats/gmtbeat
-    version: develop-gomod-d524e4d
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/gmtbeat
+    version: 6.0.6
   ciscoampbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/ciscoampbeat
     version: 6.1.6
@@ -57,8 +57,8 @@ services:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/symantecwssbeat
     version: 6.0.3
   msgraphbeat:
-    image: logrhythm-docker.jfrog.io/logrhythm/collection/collection-dev/beats/msgraphbeat
-    version: develop-gomod-d524e4d
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/msgraphbeat
+    version: 6.1.0
   prismacloudbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/prismacloudbeat
     version: 6.0.4
@@ -84,8 +84,8 @@ services:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/salesforceauditbeat
     version: 6.0.0
   tenablebeat:
-    image: logrhythm-docker.jfrog.io/logrhythm/collection/collection-dev/beats/tenablebeat
-    version: develop-gomod-d524e4d
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/tenablebeat
+    version: 6.0.6
 utilities:
   lrjq:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrjq
