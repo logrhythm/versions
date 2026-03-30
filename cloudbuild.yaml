@@ -1,10 +1,56 @@
-# Google Cloud Build
-# This file defines the PR check for versions
+# Google Cloud Build - Release Artifact Validation Pipeline
+# Validates that all Docker images referenced in latest.yml are pullable from the registry.
+#
+# Triggered on: PRs and pushes to master in logrhythm/versions
+# Purpose: Catch broken image references before a release is published.
+#
+# Requires Secret Manager secrets:
+#   - ARTIFACTORY_USER     - JFrog Artifactory username
+#   - ARTIFACTORY_PASSWORD - JFrog Artifactory password
+
 steps:
 
-  # === BUILD ===
+# === AUTHENTICATE WITH JFROG ARTIFACTORY ===
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: fetch_artifactory_credentials
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      echo -n "$(gcloud secrets versions access latest --secret=ARTIFACTORY_USER)" > /workspace/artifactory_user.txt
+      echo -n "$(gcloud secrets versions access latest --secret=ARTIFACTORY_PASSWORD)" > /workspace/artifactory_password.txt
 
-  # Run lrv validate against the present version.yml contents.
-  - name: gcr.io/datacollector-215718/lrv:latest
-    id: validate
-    args: ["validate", "-f", "latest.yml"]
+- name: 'gcr.io/cloud-builders/docker'
+  id: authenticate_artifactory
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      docker login logrhythm-docker.jfrog.io \
+        --username "$(cat /workspace/artifactory_user.txt)" \
+        --password-stdin < /workspace/artifactory_password.txt
+  waitFor:
+    - fetch_artifactory_credentials
+
+# === VALIDATE RELEASE ARTIFACTS ===
+# Cloud Build runs lrversion directly as a step — /workspace and
+# /var/run/docker.sock are mounted automatically.
+# --url "" suppresses the default GitHub URL so only the local latest.yml
+# is validated (i.e. the proposed change, not the already-published master).
+- name: 'logrhythm-docker.jfrog.io/logrhythm/collection/collection-master/lrversion:${_LRVERSION_TAG}'
+  id: validate_release_artifacts
+  args:
+    - 'validate'
+    - '--file'
+    - '/workspace/latest.yml'
+    - '--url'
+    - ''
+  waitFor:
+    - authenticate_artifactory
+
+substitutions:
+  _LRVERSION_TAG: '1.0.0'
+
+timeout: 600s
+options:
+  machineType: 'E2_STANDARD_2'
