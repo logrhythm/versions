@@ -1,7 +1,7 @@
 services:
   lrctl:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
-    version: 6.6.4
+    version: 6.6.3
   open-collector:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/opencollector
     version: 5.6.20
@@ -25,7 +25,7 @@ services:
     version: 7.0.0
   gmtbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/gmtbeat
-    version: 6.0.6
+    version: 6.0.5
   ciscoampbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/ciscoampbeat
     version: 6.1.6
@@ -58,7 +58,7 @@ services:
     version: 6.0.3
   msgraphbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/msgraphbeat
-    version: 6.1.0
+    version: 6.0.9
   prismacloudbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/prismacloudbeat
     version: 6.0.4
@@ -82,9 +82,6 @@ services:
     version: 6.0.0
   salesforceauditbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/salesforceauditbeat
-    version: 6.0.0
-  tenablebeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/tenablebeat
     version: 6.0.0
 utilities:
   lrjq:
