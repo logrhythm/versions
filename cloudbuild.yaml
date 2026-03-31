@@ -1,10 +1,47 @@
-# Google Cloud Build
-# This file defines the PR check for versions
+# Google Cloud Build - Release Artifact Validation Pipeline
+# Validates that all Docker images referenced in latest.yml are pullable from the registry.
+#
+# Triggered on: PRs and pushes to master in logrhythm/versions
+# Purpose: Catch broken image references before a release is published.
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/$PROJECT_ID/secrets/ARTIFACTORY_USER/versions/latest
+    env: 'ARTIFACTORY_USER'
+  - versionName: projects/$PROJECT_ID/secrets/ARTIFACTORY_PASSWORD/versions/latest
+    env: 'ARTIFACTORY_PASSWORD'
+
 steps:
 
-  # === BUILD ===
+# === AUTHENTICATE WITH JFROG ARTIFACTORY ===
+- name: 'gcr.io/cloud-builders/docker'
+  id: authenticate_artifactory
+  secretEnv: ['ARTIFACTORY_USER', 'ARTIFACTORY_PASSWORD']
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      echo "$$ARTIFACTORY_PASSWORD" | docker login logrhythm-docker.jfrog.io \
+        --username "$$ARTIFACTORY_USER" \
+        --password-stdin
 
-  # Run lrv validate against the present version.yml contents.
-  - name: gcr.io/datacollector-215718/lrv:latest
-    id: validate
-    args: ["validate", "-f", "latest.yml"]
+# === VALIDATE RELEASE ARTIFACTS ===
+- name: 'gcr.io/cloud-builders/docker'
+  id: validate_release_artifacts
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      docker pull logrhythm-docker.jfrog.io/logrhythm/collection/collection-master/lrversion:${_LRVERSION_TAG}
+      docker run --rm \
+        -v /workspace:/workspace \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        logrhythm-docker.jfrog.io/logrhythm/collection/collection-master/lrversion:${_LRVERSION_TAG} \
+        validate --file /workspace/latest.yml --url ""
+  waitFor:
+    - authenticate_artifactory
+
+substitutions:
+  _LRVERSION_TAG: '1.0.0'
+
+timeout: 600s
