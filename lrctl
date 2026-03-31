@@ -1306,7 +1306,7 @@ case "${first_non_flag_arg:-}" in
 
       # Pull the image down silently if we don't already have it. We do this so
       # that the user does not see the Docker pull information that would happen
-      # if the pull happens during the run.
+      # if the pull happens during the run only.
       if [[ "${global_autoupdate_enabled}" == "true" ]]; then
         pullLrctlImage
       fi
