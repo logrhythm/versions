@@ -14,7 +14,6 @@ availableSecrets:
 steps:
 
 # === AUTHENTICATE WITH JFROG ARTIFACTORY ===
-# Credentials are injected as env vars scoped to this step only — never written to disk.
 - name: 'gcr.io/cloud-builders/docker'
   id: authenticate_artifactory
   secretEnv: ['ARTIFACTORY_USER', 'ARTIFACTORY_PASSWORD']
