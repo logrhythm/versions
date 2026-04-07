@@ -58,7 +58,7 @@ services:
     version: 6.0.3
   msgraphbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/msgraphbeat
-    version: ENG-86025-GCC-gomod-8e0c17b
+    version: ENG-92284-Message-Tracking-5aa39dc
   prismacloudbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/prismacloudbeat
     version: 6.0.3-ENG-79404_PrismaCloud-dirty
