@@ -42,8 +42,8 @@ services:
     image: gcr.io/lrcollection/beats/oktabeat
     version: 6.0.4
   kafkabeat:
-    image: gcr.io/lrcollection/beats/kafkabeat
-    version: 6.0.6
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/duobeat
+    version: Eng-94813-KafkaIssue-709c5f2
   qualysfimbeat:
     image: gcr.io/lrcollection/beats/qualysfimbeat
     version: 6.0.5
