@@ -52,7 +52,7 @@ services:
     version: 6.0.3
   genericbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/genericbeat
-    version: 78865-7840492
+    version: ENG-78865-7840492
   symantecwssbeat:
     image: gcr.io/lrcollection/beats/symantecwssbeat
     version: 6.0.3
