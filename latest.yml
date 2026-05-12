@@ -3,81 +3,93 @@ services:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/lrctl
     version: ENG-93836-boxbeat-562d184
   open-collector:
-    image: gcr.io/datacollector-215718/opencollector
-    version: 5.6.17:latest
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/opencollector
+    version: 5.6.20
   metrics:
-    image: gcr.io/lrcollection/metrics
-    version: 6.0.5
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/metrics
+    version: 6.0.8
   eventhubbeat:
-    image: gcr.io/datacollector-215718/beats/eventhubbeat
-    version: dev_binary3
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/eventhubbeat
+    version: 6.0.10
   gsbeat:
-    image: gcr.io/datacollector-215718/beats/gsbeat
-    version: ENG-62828
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/gsbeat
+    version: 6.0.5
   s3beat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/s3beat
-    version: ENG-81493-f06b6b2
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/s3beat
+    version: 6.2.3
   pubsubbeat:
-    image: gcr.io/lrcollection/beats/pubsubbeat
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/pubsubbeat
     version: 6.0.3
   sophoscentralbeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/sophoscentralbeat
-    version: 6.0.3-ENG-63848_lrctl_sophos_input_updated-dirty
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/sophoscentralbeat
+    version: 7.0.0
   gmtbeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/gmtbeat
-    version: ENG-80795-devbinary
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/gmtbeat
+    version: 6.0.6
   ciscoampbeat:
-    image: gcr.io/lrcollection/beats/ciscoampbeat
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/ciscoampbeat
     version: 6.1.6
   webhookbeat:
-    image: gcr.io/lrcollection/beats/webhookbeat
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/webhookbeat
     version: 6.1.7
   duobeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/duobeat
-    version: 6.0.5-ENG-84600_Duo_Api_upgrade_Bazel-dirty
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/duobeat
+    version: 6.0.6
   carbonblackcloudbeat:
-    image: gcr.io/lrcollection/beats/carbonblackcloudbeat
-    version: 6.0.7
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/carbonblackcloudbeat
+    version: 6.0.8
   oktabeat:
-    image: gcr.io/lrcollection/beats/oktabeat
-    version: 6.0.4
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/oktabeat
+    version: 6.0.5
   kafkabeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/kafkabeat
-    version: Eng-94813-KafkaIssue-f31a543
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/kafkabeat
+    version: 6.0.8
   qualysfimbeat:
-    image: gcr.io/lrcollection/beats/qualysfimbeat
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/qualysfimbeat
     version: 6.0.5
   proofpointbeat:
-    image: gcr.io/lrcollection/beats/proofpointbeat
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/proofpointbeat
     version: 6.0.3
   genericbeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/genericbeat
-    version: ENG-78865-7840492
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/genericbeat
+    version: 6.2.0
   symantecwssbeat:
-    image: gcr.io/lrcollection/beats/symantecwssbeat
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/symantecwssbeat
     version: 6.0.3
   msgraphbeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/msgraphbeat
-    version: ENG-92284-Message-Tracking-5aa39dc
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/msgraphbeat
+    version: 6.1.1
   prismacloudbeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/prismacloudbeat
-    version: 6.0.3-ENG-79404_PrismaCloud-dirty
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/prismacloudbeat
+    version: 6.0.4
   darktracebeat:
-    image: gcr.io/lrcollection/beats/darktracebeat
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/darktracebeat
     version: 6.0.0
   salesforcebeat:
-    image: gcr.io/lrcollection/beats/salesforcebeat
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/salesforcebeat
     version: 6.0.2
+  exabeambeat:
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/exabeambeat
+    version: 6.0.0
+  sentinelonebeat:
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/sentinelonebeat
+    version: 6.0.1
+  mimecastsiembeat:
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/mimecastsiembeat
+    version: 6.0.0
   o365beat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/o365beat
-    version: dev_binary2
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/o365beat
+    version: 6.0.0
+  salesforceauditbeat:
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/salesforceauditbeat
+    version: 6.0.0
   tenablebeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/tenablebeat
     version: 6.0.0
 utilities:
   lrjq:
-    image: gcr.io/lrcollection/lrjq
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrjq
     version: 5.1.4
   ocpipeline:
-    image: gcr.io/lrcollection/ocpipeline
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/ocpipeline
     version: 5.1.7
