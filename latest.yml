@@ -51,8 +51,8 @@ services:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/proofpointbeat
     version: 6.0.3
   genericbeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/genericbeat
-    version: 6.2.0
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/genericbeat
+    version: ENG-78865-7840492
   symantecwssbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/symantecwssbeat
     version: 6.0.3
