@@ -1,7 +1,7 @@
 services:
   lrctl:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/lrctl
-    version: ENG-93836-boxbeat-562d184
+    version: ENG-63510-fix-beat-retired-ip-selection-488a4f2
   open-collector:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/opencollector
     version: 5.6.20
