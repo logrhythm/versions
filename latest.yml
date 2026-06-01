@@ -1,7 +1,7 @@
 services:
   lrctl:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
-    version: 6.6.5
+    version: 6.6.6
   open-collector:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/opencollector
     version: 5.6.20
@@ -16,7 +16,7 @@ services:
     version: 6.0.5
   s3beat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/s3beat
-    version: 6.2.3
+    version: 6.2.4
   pubsubbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/pubsubbeat
     version: 6.0.3
@@ -52,7 +52,7 @@ services:
     version: 6.0.3
   genericbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/genericbeat
-    version: 6.2.0
+    version: 6.2.1
   symantecwssbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/symantecwssbeat
     version: 6.0.3
