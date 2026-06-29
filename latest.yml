@@ -1,7 +1,7 @@
 services:
   lrctl:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
-    version: 6.6.6
+    version: 6.7.6
   open-collector:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/opencollector
     version: 5.6.20
@@ -76,7 +76,7 @@ services:
     version: 6.0.1
   mimecastsiembeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/mimecastsiembeat
-    version: 6.0.0
+    version: 6.1.0
   o365beat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/o365beat
     version: 6.0.0
@@ -85,6 +85,9 @@ services:
     version: 6.0.0
   tenablebeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/tenablebeat
+    version: 6.0.0
+    boxbeat:
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/boxbeat
     version: 6.0.0
 utilities:
   lrjq:
