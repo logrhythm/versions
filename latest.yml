@@ -86,7 +86,7 @@ services:
   tenablebeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/tenablebeat
     version: 6.0.0
-    boxbeat:
+  boxbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/boxbeat
     version: 6.0.0
 utilities:
