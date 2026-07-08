@@ -1,7 +1,7 @@
 services:
   lrctl:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
-    version: 6.7.6
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/lrctl
+    version: ENG-85445_F5_jsonfix-31137de
   open-collector:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/opencollector
     version: 5.6.20
@@ -30,8 +30,8 @@ services:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/ciscoampbeat
     version: 6.1.6
   webhookbeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/webhookbeat
-    version: 6.1.7
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/webhookbeat
+    version: ENG-85445_F5_jsonfix-31137de
   duobeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/duobeat
     version: 6.0.6
