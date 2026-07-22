@@ -15,8 +15,8 @@ services:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/gsbeat
     version: 6.0.5
   s3beat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/s3beat
-    version: 6.2.4
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/s3beat
+    version: ENG-101741-s3beat-honor-proxy-settings-f09463a
   pubsubbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/pubsubbeat
     version: 6.0.3
