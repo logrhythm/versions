@@ -16,7 +16,7 @@ services:
     version: 6.0.5
   s3beat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/s3beat
-    version: 6.2.4
+    version: 6.2.5
   pubsubbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/pubsubbeat
     version: 6.0.3
@@ -31,7 +31,7 @@ services:
     version: 6.1.6
   webhookbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/webhookbeat
-    version: 6.1.7
+    version: 6.1.8
   duobeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/duobeat
     version: 6.0.6
@@ -79,7 +79,7 @@ services:
     version: 6.1.0
   o365beat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/o365beat
-    version: 6.0.0
+    version: 6.0.1
   salesforceauditbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/salesforceauditbeat
     version: 6.0.0
