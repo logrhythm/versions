@@ -84,8 +84,8 @@ services:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/salesforceauditbeat
     version: 6.0.0
   tenablebeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/tenablebeat
-    version: 6.0.0
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/tenablebeat
+    version: ENG-104237_tenable_beatname_issue-88ad256
   boxbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/boxbeat
     version: 6.0.0
