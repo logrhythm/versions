@@ -40,7 +40,7 @@ services:
     version: 6.0.8
   oktabeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/oktabeat
-    version: 6.0.5
+    version: 6.0.6
   kafkabeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/kafkabeat
     version: 6.0.8
@@ -67,7 +67,7 @@ services:
     version: 6.0.0
   salesforcebeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/salesforcebeat
-    version: 6.0.2
+    version: 6.0.3
   exabeambeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/exabeambeat
     version: 6.0.0
