@@ -67,7 +67,7 @@ services:
     version: 6.0.0
   salesforcebeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/salesforcebeat
-    version: 6.0.3
+    version: 6.0.2
   exabeambeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/exabeambeat
     version: 6.0.1
