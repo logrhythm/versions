@@ -37,19 +37,19 @@ services:
     version: 6.0.6
   carbonblackcloudbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/carbonblackcloudbeat
-    version: 6.0.8
+    version: 6.0.9
   oktabeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/oktabeat
     version: 6.0.6
   kafkabeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/kafkabeat
-    version: 6.0.8
+    version: 6.0.9
   qualysfimbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/qualysfimbeat
     version: 6.0.5
   proofpointbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/proofpointbeat
-    version: 6.0.3
+    version: 6.0.4
   genericbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/genericbeat
     version: 6.2.1
@@ -70,7 +70,7 @@ services:
     version: 6.0.3
   exabeambeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/exabeambeat
-    version: 6.0.0
+    version: 6.0.1
   sentinelonebeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/sentinelonebeat
     version: 6.0.1
