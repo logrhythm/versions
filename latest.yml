@@ -1,13 +1,10 @@
 services:
   lrctl:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
-    version: 6.7.7
+    version: 6.7.8
   open-collector:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/opencollector
-    version: 6.0.0
-  metrics:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/metrics
-    version: 6.0.8
+    version: 6.0.1
   eventhubbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/eventhubbeat
     version: 6.0.10
