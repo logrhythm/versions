@@ -78,8 +78,8 @@ services:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/mimecastsiembeat
     version: 6.1.0
   o365beat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/o365beat
-    version: 6.0.1
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/o365beat
+    version: develop-01b871b
   salesforceauditbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/salesforceauditbeat
     version: 6.0.0
