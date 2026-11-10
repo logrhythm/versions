@@ -1,7 +1,7 @@
 services:
   lrctl:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrctl
-    version: 6.7.6
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/lrctl
+    version: develop-7f7a661
   open-collector:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/opencollector
     version: 5.6.20
@@ -89,6 +89,9 @@ services:
   boxbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/boxbeat
     version: 6.0.0
+  claudeactivitiesbeat:
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/claudeactivitiesbeat
+    version: develop-7f7a661
 utilities:
   lrjq:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/lrjq
