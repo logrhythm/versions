@@ -9,8 +9,8 @@ services:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/metrics
     version: 6.0.8
   eventhubbeat:
-    image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/eventhubbeat
-    version: 6.0.10
+    image: release.exabeam.com/docker-local/logrhythm/collection/collection-dev/beats/eventhubbeat
+    version: ENG-96536-eventhub-goroutine-eph-fix-566b6c7
   gsbeat:
     image: release.exabeam.com/docker-local/logrhythm/collection/collection-release/beats/gsbeat
     version: 6.0.5
